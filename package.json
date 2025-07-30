@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "Three.js",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite src",
     "build": "vite build"
   },
   "keywords": [],
