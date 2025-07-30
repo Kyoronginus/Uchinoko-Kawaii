@@ -18,7 +18,7 @@ const sizes = {
 
 // Camera
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(0, 5, 10)
+camera.position.set(0,3, 10)
 
 // Camera Controller
 const cameraController = new CameraController(camera)
