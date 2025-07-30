@@ -1,0 +1,17 @@
+{
+  "name": "hd2d_test",
+  "version": "1.0.0",
+  "main": "Three.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "three": "^0.178.0",
+    "vite": "^6.3.5"
+  }
+}
