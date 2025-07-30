@@ -8,7 +8,7 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-scene.fog = new THREE.Fog(0x87CEEB, 10, 50) // Atmospheric fog for depth
+scene.fog = new THREE.Fog(0x87CEEB, 40, 10) // Atmospheric fog for depth
 
 // Sizes
 const sizes = {
@@ -35,7 +35,7 @@ gltfLoader.load(
     (gltf) => {
         console.log('GLTF loaded successfully:', gltf)
         
-        const floorMesh = gltf.scene.children.find(child => child.name === 'Pssdlane')
+        const floorMesh = gltf.scene.children.find(child => child.name === 'Plane')
         if (floorMesh) {
             console.log('Found HD2D_surface mesh')
             floorMesh.position.set(0, 0, 0)
@@ -45,7 +45,7 @@ gltfLoader.load(
             console.log('HD2D_surface mesh not found, adding entire scene')
             console.log('Available children:', gltf.scene.children.map(child => child.name))
         }
-        // scene.add(gltf.scene)あｓ
+        // scene.add(gltf.scene)
     },
     (progress) => {
         console.log('Loading progress:', (progress.loaded / progress.total * 100) + '%')
@@ -72,7 +72,7 @@ function createFallbackFloor() {
 }
 
 // Lighting setup for HD-2D style
-const ambientLight = new THREE.AmbientLight(0x404040, 0.3)
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
 scene.add(ambientLight)
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
@@ -81,6 +81,9 @@ directionalLight.castShadow = true
 directionalLight.shadow.mapSize.width = 2048
 directionalLight.shadow.mapSize.height = 2048
 scene.add(directionalLight)
+
+//background color
+scene.background = new THREE.Color(0xffffff); // A nice sky blue
 
 // Animation loop
 function animate() {
