@@ -2,13 +2,14 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { CameraController } from './controllers/CameraController.js'
 import { HD2DRenderer } from './rendering/HD2DRenderer.js'
+import { PixelCharacter } from './characters/PixelCharacter.js'
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-scene.fog = new THREE.Fog(0x87CEEB, 40, 10) // Atmospheric fog for depth
+// scene.fog = new THREE.Fog(0x87CEEB, 40, 10) // Atmospheric fog for depth
 
 // Sizes
 const sizes = {
@@ -18,10 +19,13 @@ const sizes = {
 
 // Camera
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(0,3, 10)
+camera.position.set(0, 8, 12)
 
-// Camera Controller
-const cameraController = new CameraController(camera)
+// ピクセルキャラクター作成
+const character = new PixelCharacter('/char_sprite_front.png', scene)
+
+// Camera Controller (キャラクター追従モード)
+const cameraController = new CameraController(camera, character)
 
 // HD-2D Renderer
 const hd2dRenderer = new HD2DRenderer(canvas, sizes)
@@ -75,7 +79,7 @@ function createFallbackFloor() {
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
 scene.add(ambientLight)
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
+const directionalLight = new THREE.DirectionalLight(0xffffff, 3)
 directionalLight.position.set(10, 10, 5)
 directionalLight.castShadow = true
 directionalLight.shadow.mapSize.width = 2048
@@ -89,7 +93,8 @@ scene.background = new THREE.Color(0xffffff); // A nice sky blue
 function animate() {
     requestAnimationFrame(animate)
     
-    cameraController.update()
+    character.update() // キャラクター更新
+    cameraController.update() // カメラ更新
     hd2dRenderer.render(scene, camera)
 }
 

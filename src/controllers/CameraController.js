@@ -1,8 +1,14 @@
 import * as THREE from 'three'
 
 export class CameraController {
-    constructor(camera) {
+    constructor(camera, character = null) {
         this.camera = camera
+        this.character = character
+        this.followDistance = new THREE.Vector3(0, 8, 12) // キャラクターからの相対位置
+        this.lookAtOffset = new THREE.Vector3(0, 1, 0) // 見る位置のオフセット
+        
+        // フリーカメラモード用
+        this.freeMode = !character
         this.moveSpeed = 0.1
         this.keys = {
             w: false,
@@ -14,11 +20,20 @@ export class CameraController {
         this.velocity = new THREE.Vector3()
         this.direction = new THREE.Vector3()
         
-        this.setupEventListeners()
+        if (this.freeMode) {
+            this.setupEventListeners()
+        }
+    }
+    
+    setCharacter(character) {
+        this.character = character
+        this.freeMode = false
     }
     
     setupEventListeners() {
         document.addEventListener('keydown', (event) => {
+            if (!this.freeMode) return
+            
             switch(event.code) {
                 case 'KeyW':
                     this.keys.w = true
@@ -36,6 +51,8 @@ export class CameraController {
         })
         
         document.addEventListener('keyup', (event) => {
+            if (!this.freeMode) return
+            
             switch(event.code) {
                 case 'KeyW':
                     this.keys.w = false
@@ -54,6 +71,28 @@ export class CameraController {
     }
     
     update() {
+        if (this.character && !this.freeMode) {
+            this.followCharacter()
+        } else {
+            this.updateFreeCamera()
+        }
+    }
+    
+    followCharacter() {
+        const characterPos = this.character.getPosition()
+        
+        // カメラの目標位置を計算
+        const targetPosition = characterPos.clone().add(this.followDistance)
+        
+        // スムーズな追従
+        this.camera.position.lerp(targetPosition, 0.1)
+        
+        // キャラクターを見る
+        const lookAtTarget = characterPos.clone().add(this.lookAtOffset)
+        this.camera.lookAt(lookAtTarget)
+    }
+    
+    updateFreeCamera() {
         this.velocity.set(0, 0, 0)
         
         if (this.keys.w) {
