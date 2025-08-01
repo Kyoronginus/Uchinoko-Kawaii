@@ -19,7 +19,7 @@ const sizes = {
 
 // Camera
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(0, 8, 12)
+camera.position.set(0, 12, 12)
 
 // ピクセルキャラクター作成
 const character = new PixelCharacter('/char_sprite_front.png', scene)

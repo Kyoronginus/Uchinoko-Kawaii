@@ -4,12 +4,12 @@ export class CameraController {
     constructor(camera, character = null) {
         this.camera = camera
         this.character = character
-        this.followDistance = new THREE.Vector3(0, 8, 12) // キャラクターからの相対位置
+        this.followDistance = new THREE.Vector3(0, 3, 12) // キャラクターからの相対位置
         this.lookAtOffset = new THREE.Vector3(0, 1, 0) // 見る位置のオフセット
         
         // フリーカメラモード用
         this.freeMode = !character
-        this.moveSpeed = 0.1
+        this.moveSpeed = 0.07
         this.keys = {
             w: false,
             a: false,
