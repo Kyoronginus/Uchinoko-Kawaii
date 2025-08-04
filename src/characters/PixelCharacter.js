@@ -4,7 +4,7 @@ export class PixelCharacter {
     constructor(textureUrl, scene) {
         this.scene = scene
         this.position = new THREE.Vector3(0, 1, 0)
-        this.moveSpeed = 0.07
+        this.moveSpeed = 0.05
         this.isMoving = false
 
         // キャラクターの向き
@@ -12,17 +12,27 @@ export class PixelCharacter {
 
         // Animation properties
         this.clock = new THREE.Clock()
-        this.idleTimer = 0
-        this.isSpecialIdle = false // Is the "sleepy" animation playing?
-        this.idleFrames = [] // To store sleepy animation textures
-        this.currentFrame = 0
-        this.frameTimer = 0
-        this.frameDuration = 0.8 // How long each sleepy frame lasts (in seconds)
+        this.idleTimer = 0; // 5秒放置を数えるタイマーは必要
+        this.animationTime = 0; // ★歩行・放置アニメーション共用のタイマー
+
+        this.isSpecialIdle = false;
+        this.idleFrames = [];
+        this.walkFrames = [];
+
+        // フレームの再生時間
+        this.idleFrameDuration = 0.8;
+        this.walkFrameDuration = 0.20; // 少し速くしました
+
+
+        // Walking animation sequence - start with walking frame 1
+        this.walkAnimationSequence = [1, 0, 2, 0] // walk1 -> default -> walk2 -> default
+        this.walkSequenceIndex = 0
 
         // Store the default texture
         this.defaultTexture = null
 
         this.loadIdleFrames() // Load sleepy frames
+        this.loadWalkFrames() // Load walking frames
         this.setupCharacterSprite(textureUrl)
         this.setupMovement()
     }
@@ -39,7 +49,6 @@ export class PixelCharacter {
                 texture.minFilter = THREE.NearestFilter
                 texture.wrapS = THREE.ClampToEdgeWrapping
                 texture.wrapT = THREE.ClampToEdgeWrapping
-
 
                 this.defaultTexture = texture // Store the default texture
                 // スプライト作成
@@ -140,22 +149,24 @@ export class PixelCharacter {
         })
     }
 
-    // Replace your existing update method with this
     update() {
-        const deltaTime = this.clock.getDelta() // Time since last frame
+        const deltaTime = this.clock.getDelta();
+        const wasMoving = this.isMoving; // 前回のフレームで動いていたか
         const velocity = new THREE.Vector3()
         this.isMoving = (this.keys.w || this.keys.a || this.keys.s || this.keys.d)
 
         if (this.isMoving) {
-            // --- If Moving ---
-            this.idleTimer = 0 // Reset idle timer
-            this.isSpecialIdle = false // Not in special idle anymore
+            // --- 動いている場合 ---
+            this.idleTimer = 0;
+            this.isSpecialIdle = false;
 
-            // Reset to default texture if it's not already set
-            if (this.sprite && this.sprite.material.map !== this.defaultTexture) {
-                this.sprite.material.map = this.defaultTexture
+            // 停止状態から動き始めた瞬間にタイマーをリセット
+            if (!wasMoving) {
+                this.animationTime = 0;
             }
 
+            this.animationTime += deltaTime;
+            this.playWalkAnimation();
             // Movement logic
             if (this.keys.w) velocity.z -= this.moveSpeed
             if (this.keys.s) velocity.z += this.moveSpeed
@@ -163,15 +174,23 @@ export class PixelCharacter {
             if (this.keys.d) velocity.x += this.moveSpeed
 
         } else {
-            // --- If Not Moving ---
-            this.idleTimer += deltaTime // Increment idle timer
+            // --- 停止している場合 ---
 
-            if (this.idleTimer >= 5) {
-                this.isSpecialIdle = true // Start special idle animation
+            // 動きから停止した瞬間にタイマーをリセット
+            if (wasMoving) {
+                this.animationTime = 0;
+                this.resetToStanding();
+            }
+
+            this.idleTimer += deltaTime;
+            if (this.idleTimer >= 5 && !this.isSpecialIdle) {
+                this.isSpecialIdle = true;
+                this.animationTime = 0; // うたたねアニメ開始時にタイマーをリセット
             }
 
             if (this.isSpecialIdle) {
-                this.playIdleAnimation(deltaTime) // Play the sleepy animation
+                this.animationTime += deltaTime;
+                this.playIdleAnimation();
             }
         }
 
@@ -182,7 +201,6 @@ export class PixelCharacter {
         }
     }
 
-    // Add this new method to the PixelCharacter class
     loadIdleFrames() {
         const textureLoader = new THREE.TextureLoader()
         const frameUrls = [
@@ -199,29 +217,56 @@ export class PixelCharacter {
         })
     }
 
+    loadWalkFrames() {
+        const textureLoader = new THREE.TextureLoader()
+        const frameUrls = [
+            '/front_walking/default_standing.png',      // Frame 0: default standing
+            '/front_walking/front_walking_1.png',       // Frame 1: walking frame 1
+            '/front_walking/front_walking_2.png'        // Frame 2: walking frame 2
+        ]
 
+        frameUrls.forEach(url => {
+            const texture = textureLoader.load(url)
+            texture.magFilter = THREE.NearestFilter
+            texture.minFilter = THREE.NearestFilter
+            this.walkFrames.push(texture)
+        })
+    }
 
-    // 将来のアニメーション用メソッド
+    // Replace playWalkAnimation
     playWalkAnimation() {
-        // TODO: 歩行アニメーション実装
-        // スプライトシートを使用してフレームを切り替え
+        if (!this.sprite || this.walkFrames.length === 0) return;
+
+        // 経過時間から現在のフレームを計算
+        const sequenceIndex = Math.floor(this.animationTime / this.walkFrameDuration) % this.walkAnimationSequence.length;
+        const frameIndex = this.walkAnimationSequence[sequenceIndex];
+
+        this.sprite.material.map = this.walkFrames[frameIndex];
+    }
+    resetToStanding() {
+        if (!this.sprite) return
+
+        // Reset walking animation sequence
+        this.walkSequenceIndex = 0
+        this.walkFrameTimer = 0
+
+        // Set to default standing texture
+        if (this.defaultTexture) {
+            this.sprite.material.map = this.defaultTexture
+        } else if (this.walkFrames.length > 0) {
+            this.sprite.material.map = this.walkFrames[0] // Use first frame as fallback
+        }
     }
 
-    playIdleAnimation(deltaTime) {
-    if (!this.sprite || this.idleFrames.length === 0) return
+    // Replace playIdleAnimation
+    playIdleAnimation() {
+        if (!this.sprite || this.idleFrames.length === 0) return;
 
-    this.frameTimer += deltaTime
+        // 経過時間から現在のフレームを計算
+        const frameIndex = Math.floor(this.animationTime / this.idleFrameDuration) % this.idleFrames.length;
 
-    if (this.frameTimer >= this.frameDuration) {
-        this.frameTimer = 0 // Reset frame timer
-        
-        // Move to the next frame, and loop back to the start if at the end
-        this.currentFrame = (this.currentFrame + 1) % this.idleFrames.length
-        
-        // Change the sprite's texture to the new frame
-        this.sprite.material.map = this.idleFrames[this.currentFrame]
+        this.sprite.material.map = this.idleFrames[frameIndex];
     }
-}
 
     // カメラがキャラクターを追従するための位置取得
     getPosition() {

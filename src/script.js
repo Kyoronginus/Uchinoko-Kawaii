@@ -22,7 +22,7 @@ const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 
 camera.position.set(0, 12, 12)
 
 // ピクセルキャラクター作成
-const character = new PixelCharacter('/char_sprite_front.png', scene)
+const character = new PixelCharacter('/default_standing.png', scene)
 
 // Camera Controller (キャラクター追従モード)
 const cameraController = new CameraController(camera, character)
