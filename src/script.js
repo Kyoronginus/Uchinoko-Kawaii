@@ -75,7 +75,7 @@ function createFallbackFloor() {
     scene.add(floor)
 }
 
-// Lighting setup for HD-2D style
+// Lighting setup
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
 scene.add(ambientLight)
 
@@ -87,14 +87,14 @@ directionalLight.shadow.mapSize.height = 2048
 scene.add(directionalLight)
 
 //background color
-scene.background = new THREE.Color(0xffffff); // A nice sky blue
+scene.background = new THREE.Color(0xffffff); 
 
 // Animation loop
 function animate() {
     requestAnimationFrame(animate)
     
-    character.update() // キャラクター更新
-    cameraController.update() // カメラ更新
+    character.update()
+    cameraController.update() 
     hd2dRenderer.render(scene, camera)
 }
 

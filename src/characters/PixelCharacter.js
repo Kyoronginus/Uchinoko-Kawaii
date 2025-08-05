@@ -27,7 +27,12 @@ export class PixelCharacter {
         // Walking animation sequence - start with walking frame 1
         this.walkAnimationSequence = [1, 0, 2, 0] // walk1 -> default -> walk2 -> default
         this.walkSequenceIndex = 0
-
+        this.animations = {
+            down: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 },
+            up: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 }, // Placeholder
+            left: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 },
+            right: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 }
+        };
         // Store the default texture
         this.defaultTexture = null
 
@@ -183,7 +188,7 @@ export class PixelCharacter {
             }
 
             this.idleTimer += deltaTime;
-            if (this.idleTimer >= 5 && !this.isSpecialIdle) {
+            if (this.idleTimer >= 3 && !this.isSpecialIdle) {
                 this.isSpecialIdle = true;
                 this.animationTime = 0; // うたたねアニメ開始時にタイマーをリセット
             }
@@ -217,31 +222,59 @@ export class PixelCharacter {
         })
     }
 
+    // Replace your loadWalkFrames method with this
     loadWalkFrames() {
-        const textureLoader = new THREE.TextureLoader()
-        const frameUrls = [
-            '/front_walking/default_standing.png',      // Frame 0: default standing
-            '/front_walking/front_walking_1.png',       // Frame 1: walking frame 1
-            '/front_walking/front_walking_2.png'        // Frame 2: walking frame 2
-        ]
+        const textureLoader = new THREE.TextureLoader();
+        const directions = ['down', 'up', 'left', 'right']; // Add 'up' when you have it
 
-        frameUrls.forEach(url => {
-            const texture = textureLoader.load(url)
-            texture.magFilter = THREE.NearestFilter
-            texture.minFilter = THREE.NearestFilter
-            this.walkFrames.push(texture)
-        })
+        const frameFiles = {
+            down: [
+                '/front_walking/default_standing.png',
+                '/front_walking/front_walking_1.png',
+                '/front_walking/front_walking_2.png'
+            ],
+            // For now, up will use the same sprites as down
+            up: [
+                '/front_walking/default_standing.png',
+                '/front_walking/front_walking_1.png',
+                '/front_walking/front_walking_2.png'
+            ],
+            left: [
+                '/left_walking/standing_left.png',
+                '/left_walking/left_walking_1.png',
+                '/left_walking/left_walking_2.png'
+            ],
+            right: [
+                '/right_walking/standing_right.png',
+                '/right_walking/right_walking_1.png',
+                '/right_walking/right_walking_2.png'
+            ]
+        };
+
+        for (const dir of directions) {
+            if (frameFiles[dir]) {
+                frameFiles[dir].forEach(url => {
+                    const texture = textureLoader.load(url);
+                    texture.magFilter = THREE.NearestFilter;
+                    texture.minFilter = THREE.NearestFilter;
+                    this.animations[dir].frames.push(texture);
+                });
+            }
+        }
     }
 
     // Replace playWalkAnimation
+    // Replace your playWalkAnimation method with this
     playWalkAnimation() {
-        if (!this.sprite || this.walkFrames.length === 0) return;
+        const currentAnim = this.animations[this.direction];
+        if (!this.sprite || !currentAnim || currentAnim.frames.length === 0) return;
 
-        // 経過時間から現在のフレームを計算
-        const sequenceIndex = Math.floor(this.animationTime / this.walkFrameDuration) % this.walkAnimationSequence.length;
-        const frameIndex = this.walkAnimationSequence[sequenceIndex];
+        // Calculate which frame to show based on the current animation's sequence
+        const sequenceIndex = Math.floor(this.animationTime / currentAnim.duration) % currentAnim.sequence.length;
+        const frameIndex = currentAnim.sequence[sequenceIndex];
 
-        this.sprite.material.map = this.walkFrames[frameIndex];
+        // Change the sprite's texture to the new frame
+        this.sprite.material.map = currentAnim.frames[frameIndex];
     }
     resetToStanding() {
         if (!this.sprite) return
