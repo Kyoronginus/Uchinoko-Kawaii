@@ -235,9 +235,10 @@ export class PixelCharacter {
             ],
             // For now, up will use the same sprites as down
             up: [
-                '/front_walking/default_standing.png',
-                '/front_walking/front_walking_1.png',
-                '/front_walking/front_walking_2.png'
+                '/up_walking/default_standing.png',
+                '/up_walking/up_walking_1.png',
+                '/up_walking/up_walking_2.png'
+
             ],
             left: [
                 '/left_walking/standing_left.png',
