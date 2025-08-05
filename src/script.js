@@ -79,12 +79,29 @@ projects.forEach(project => {
         signpost.rotation.copy(project.rotation);
         signpost.scale.copy(project.scale);
 
+
+
+        // Load the texture
+        textureLoader.load(project.screenshotPath, (texture) => {
+
+            // ✅ ADD THESE TWO LINES TO FIX HORIZONTAL FLIPPING
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.repeat.x = -1;
+
+            // Apply the texture to the signpost
+            signpost.traverse((child) => {
+                if (child.isMesh && child.material.name === 'M_Screen') {
+                    child.material.map = texture;
+                    // child.material.emissive = new THREE.Color(0xffff00); // 発光させて明るく見せる
+                    child.material.emissiveMap = screenshotTexture;
+                }
+            });
+        });
+
         // モデルの中を検索して、特定のマテリアルを持つ部分を見つける
         signpost.traverse((child) => {
             if (child.isMesh && child.material.name === 'M_Screen') {
-                // スクリーンショットをテクスチャとして適用
                 child.material.map = screenshotTexture;
-                child.material.emissive = new THREE.Color(0xffffff); // 発光させて明るく見せる
                 child.material.emissiveMap = screenshotTexture;
             }
         });
