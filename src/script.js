@@ -57,13 +57,13 @@ const projects = [
         // Signpost properties
         modelPath: '/signpost.glb',
         screenshotPath: '/project_ss/Fibonacci_Detection.png',
-        position: new THREE.Vector3(-10, 0, 5),
+        position: new THREE.Vector3(0, 0, 5),
         rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
         scale: new THREE.Vector3(2, 2, 2),
         // Interaction zone properties
         zoneWidth: 4,
         zoneDepth: 4,
-        url: 'https://example.com/project_b',
+        url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
         name: 'Visit Fibonacci Detection'
     }
 ];
@@ -98,11 +98,19 @@ projects.forEach(project => {
             });
         });
 
-        // モデルの中を検索して、特定のマテリアルを持つ部分を見つける
+        // Enable shadow casting for all meshes in the signpost
         signpost.traverse((child) => {
-            if (child.isMesh && child.material.name === 'M_Screen') {
-                child.material.map = screenshotTexture;
-                child.material.emissiveMap = screenshotTexture;
+            if (child.isMesh) {
+                child.castShadow = true
+                child.receiveShadow = true
+
+                // Apply screen texture if this is the screen material
+                if (child.material.name === 'M_Screen') {
+                    child.castShadow = false;
+                    child.receiveShadow = false;
+                    child.material.map = screenshotTexture;
+                    child.material.emissiveMap = screenshotTexture;
+                }
             }
         });
 
@@ -120,11 +128,26 @@ gltfLoader.load(
         if (floorMesh) {
             console.log('Found HD2D_surface mesh')
             floorMesh.position.set(0, 0, 0)
-            floorMesh.receiveShadow = true
+
+            // Enable shadow receiving for all floor meshes
+            floorMesh.traverse((child) => {
+                if (child.isMesh) {
+                    child.receiveShadow = true
+                    child.castShadow = false // Floor shouldn't cast shadows
+                }
+            })
+
             scene.add(floorMesh)
         } else {
             console.log('HD2D_surface mesh not found, adding entire scene')
             console.log('Available children:', gltf.scene.children.map(child => child.name))
+
+            // Enable shadows for all meshes in the scene as fallback
+            gltf.scene.traverse((child) => {
+                if (child.isMesh) {
+                    child.receiveShadow = true
+                }
+            })
         }
         // scene.add(gltf.scene)
     },
@@ -154,14 +177,26 @@ function createFallbackFloor() {
 }
 
 // Lighting setup
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+const ambientLight = new THREE.AmbientLight(0xffffff,2)
 scene.add(ambientLight)
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 3)
 directionalLight.position.set(10, 10, 5)
 directionalLight.castShadow = true
-directionalLight.shadow.mapSize.width = 2048
-directionalLight.shadow.mapSize.height = 2048
+
+// Configure shadow camera for optimal coverage
+directionalLight.shadow.camera.near = 0.1
+directionalLight.shadow.camera.far = 100
+directionalLight.shadow.camera.left = -20
+directionalLight.shadow.camera.right = 20
+directionalLight.shadow.camera.top = 20
+directionalLight.shadow.camera.bottom = -20
+
+// High quality shadow settings
+directionalLight.shadow.mapSize.width = 128
+directionalLight.shadow.mapSize.height = 128
+directionalLight.shadow.bias = -0.0001 // Reduce shadow acne
+
 scene.add(directionalLight)
 
 //background color

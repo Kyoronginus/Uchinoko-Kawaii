@@ -66,9 +66,16 @@ export class PixelCharacter {
                 this.sprite = new THREE.Sprite(spriteMaterial)
                 this.sprite.scale.set(2, 2, 1) // キャラクターサイズ調整
                 this.sprite.position.copy(this.position)
-
+                // Note: Sprites cannot cast shadows in Three.js, so we'll create a shadow plane
                 this.scene.add(this.sprite)
+
+                // Create a shadow-casting plane for the character
+                this.createCharacterShadowCaster()
+
                 console.log('Character sprite loaded successfully')
+
+
+
             },
             undefined,
             (error) => {
@@ -104,7 +111,27 @@ export class PixelCharacter {
         this.sprite.scale.set(2, 2, 1)
         this.sprite.position.copy(this.position)
 
+        // Create shadow caster for fallback character too
+        this.createCharacterShadowCaster()
+
         this.scene.add(this.sprite)
+    }
+
+    createCharacterShadowCaster() {
+        // Create an invisible plane that casts shadows to simulate sprite shadows
+        const shadowGeometry = new THREE.PlaneGeometry(1.5, 2) // Match character size
+        const shadowMaterial = new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0, // Completely invisible
+            alphaTest: 0.1
+        })
+
+        this.shadowCaster = new THREE.Mesh(shadowGeometry, shadowMaterial)
+        this.shadowCaster.castShadow = true
+        this.shadowCaster.receiveShadow = false
+        this.shadowCaster.position.copy(this.position)
+
+        this.scene.add(this.shadowCaster)
     }
 
     setupMovement() {
@@ -203,6 +230,11 @@ export class PixelCharacter {
         this.position.add(velocity)
         if (this.sprite) {
             this.sprite.position.copy(this.position)
+        }
+
+        // Update shadow caster position
+        if (this.shadowCaster) {
+            this.shadowCaster.position.copy(this.position)
         }
     }
 

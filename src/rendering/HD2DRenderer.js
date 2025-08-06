@@ -13,8 +13,11 @@ export class HD2DRenderer {
         
         this.renderer.setSize(sizes.width, sizes.height)
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+        // Configure shadows for pixel art style
         this.renderer.shadowMap.enabled = true
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+        this.renderer.shadowMap.type = THREE.PCFShadowMap // Crisp shadows for pixel art
+        this.renderer.shadowMap.autoUpdate = true
         this.renderer.outputColorSpace = THREE.SRGBColorSpace
         
         // HD-2D specific settings
