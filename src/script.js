@@ -22,7 +22,7 @@ const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 
 camera.position.set(0, 12, 12)
 
 // ピクセルキャラクター作成
-const character = new PixelCharacter('/default_standing.png', scene)
+const character = new PixelCharacter('/default_standing.png', scene, camera)
 
 // Camera Controller (キャラクター追従モード)
 const cameraController = new CameraController(camera, character)
@@ -176,12 +176,12 @@ function createFallbackFloor() {
     scene.add(floor)
 }
 
-// Lighting setup
-const ambientLight = new THREE.AmbientLight(0xffffff,2)
+// Lighting setup - reduced ambient light to make shadows more visible
+const ambientLight = new THREE.AmbientLight(0xffffff, 2) // Reduced from 2 to 0.4
 scene.add(ambientLight)
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 3)
-directionalLight.position.set(10, 10, 5)
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5) // Slightly reduced intensity
+directionalLight.position.set(20, 10, 10)
 directionalLight.castShadow = true
 
 // Configure shadow camera for optimal coverage
@@ -192,11 +192,11 @@ directionalLight.shadow.camera.right = 20
 directionalLight.shadow.camera.top = 20
 directionalLight.shadow.camera.bottom = -20
 
-// High quality shadow settings
-directionalLight.shadow.mapSize.width = 128
-directionalLight.shadow.mapSize.height = 128
-directionalLight.shadow.bias = -0.0001 // Reduce shadow acne
-
+// High quality shadow settings - increased resolution for visible shadows
+directionalLight.shadow.mapSize.width = 256 // Increased from 64 to 2048S
+directionalLight.shadow.mapSize.height = 256 // Increased from 64 to 2048
+directionalLight.shadow.bias = -0.005 // Reduce shadow acne
+// directionalLight.shadow.radius = 0.1
 scene.add(directionalLight)
 
 //background color

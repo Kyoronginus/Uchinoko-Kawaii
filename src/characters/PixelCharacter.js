@@ -1,8 +1,9 @@
 import * as THREE from 'three'
 
 export class PixelCharacter {
-    constructor(textureUrl, scene) {
+    constructor(textureUrl, scene, camera = null) {
         this.scene = scene
+        this.camera = camera
         this.position = new THREE.Vector3(0, 1, 0)
         this.moveSpeed = 0.05
         this.isMoving = false
@@ -57,16 +58,19 @@ export class PixelCharacter {
 
                 this.defaultTexture = texture // Store the default texture
                 // スプライト作成
-                const spriteMaterial = new THREE.SpriteMaterial({
+                // Use MeshLambertMaterial for proper shadow receiving
+                const spriteMaterial = new THREE.MeshLambertMaterial({
                     map: texture,
                     transparent: true,
-                    alphaTest: 0.1
-                })
+                    alphaTest: 0.1,
+                    side: THREE.DoubleSide
+                });
 
-                this.sprite = new THREE.Sprite(spriteMaterial)
-                this.sprite.scale.set(2, 2, 1) // キャラクターサイズ調整
-                this.sprite.position.copy(this.position)
-                // Note: Sprites cannot cast shadows in Three.js, so we'll create a shadow plane
+                // ✅ Use a Mesh instead of a Sprite
+                this.sprite = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), spriteMaterial);
+                this.sprite.position.copy(this.position);
+                this.sprite.receiveShadow = true; // Allow the character mesh to receive shadows
+
                 this.scene.add(this.sprite)
 
                 // Create a shadow-casting plane for the character
@@ -102,14 +106,18 @@ export class PixelCharacter {
         texture.magFilter = THREE.NearestFilter
         texture.minFilter = THREE.NearestFilter
 
-        const spriteMaterial = new THREE.SpriteMaterial({
+        // Use MeshBasicMaterial for fallback character to receive shadows
+        const spriteMaterial = new THREE.MeshBasicMaterial({
             map: texture,
-            transparent: true
+            transparent: true,
+            alphaTest: 0.1,
+            side: THREE.DoubleSide
         })
 
-        this.sprite = new THREE.Sprite(spriteMaterial)
-        this.sprite.scale.set(2, 2, 1)
+        // Use Mesh instead of Sprite for shadow receiving
+        this.sprite = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), spriteMaterial)
         this.sprite.position.copy(this.position)
+        this.sprite.receiveShadow = true // Allow fallback character to receive shadows
 
         // Create shadow caster for fallback character too
         this.createCharacterShadowCaster()
@@ -118,22 +126,30 @@ export class PixelCharacter {
     }
 
     createCharacterShadowCaster() {
-        // Create an invisible plane that casts shadows to simulate sprite shadows
-        const shadowGeometry = new THREE.PlaneGeometry(1.5, 2) // Match character size
+        // Create a shadow caster that matches the character's visual shape
+        const shadowGeometry = new THREE.PlaneGeometry(2, 2); // Match sprite scale
+
+        // Use MeshBasicMaterial with alphaMap for precise shadow shape
         const shadowMaterial = new THREE.MeshBasicMaterial({
             transparent: true,
             opacity: 0, // Completely invisible
-            alphaTest: 0.1
-        })
+            alphaMap: this.defaultTexture,
+            alphaTest: 1, // Cut out transparent parts based on texture alpha
+            side: THREE.DoubleSide // Ensure shadows work from all angles
+        });
 
-        this.shadowCaster = new THREE.Mesh(shadowGeometry, shadowMaterial)
-        this.shadowCaster.castShadow = true
-        this.shadowCaster.receiveShadow = false
-        this.shadowCaster.position.copy(this.position)
+        this.shadowCaster = new THREE.Mesh(shadowGeometry, shadowMaterial);
+        this.shadowCaster.castShadow = true;
+        this.shadowCaster.receiveShadow = false; // Only casts shadows
 
-        this.scene.add(this.shadowCaster)
+        // Position it slightly behind the sprite to avoid z-fighting
+        this.shadowCaster.position.copy(this.position);
+        this.shadowCaster.position.z -= 0.01;
+
+        this.scene.add(this.shadowCaster);
+
+        console.log('Shadow caster created for character');
     }
-
     setupMovement() {
         this.keys = {
             w: false,
@@ -227,14 +243,33 @@ export class PixelCharacter {
         }
 
         // Update character position
-        this.position.add(velocity)
+        this.position.add(velocity);
         if (this.sprite) {
-            this.sprite.position.copy(this.position)
+            this.sprite.position.copy(this.position);
+
+            // Make the character mesh face the camera (billboard effect)
+            if (this.camera) {
+                this.sprite.lookAt(this.camera.position);
+            }
         }
 
-        // Update shadow caster position
+        // Sync the shadow caster's position and texture
         if (this.shadowCaster) {
-            this.shadowCaster.position.copy(this.position)
+            // Update position with slight offset to avoid z-fighting
+            this.shadowCaster.position.copy(this.position);
+            this.shadowCaster.position.z -= 0.01;
+
+            // Make shadow caster face the camera too
+            if (this.camera) {
+                this.shadowCaster.lookAt(this.camera.position);
+            }
+
+            // Sync the current texture for accurate shadow shape
+            if (this.sprite && this.sprite.material && this.sprite.material.map) {
+                // Use the sprite's current texture as alpha map for shadow shape
+                this.shadowCaster.material.alphaMap = this.sprite.material.map;
+                this.shadowCaster.material.needsUpdate = true;
+            }
         }
     }
 
