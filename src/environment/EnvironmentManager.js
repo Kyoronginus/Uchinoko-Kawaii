@@ -1,11 +1,13 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { TextManager } from './TextManager.js'
 
 export class EnvironmentManager {
     constructor(scene) {
         this.scene = scene
         this.gltfLoader = new GLTFLoader()
         this.environmentObjects = {}
+        this.textManager = new TextManager(scene)
 
         // Environment configurations
         this.config = {
@@ -217,6 +219,47 @@ export class EnvironmentManager {
     }
 
     /**
+     * Add text to the floor at a specific position
+     * @param {string} text - The text to display
+     * @param {Object} position - World position {x, z} (y will be auto-calculated)
+     * @param {Object} options - Text styling options
+     * @returns {string} - Unique ID for the text
+     */
+    addFloorText(text, position, options = {}) {
+        return this.textManager.addFloorText(text, {
+            x: position.x,
+            y: 0.01, // Slightly above floor
+            z: position.z
+        }, options)
+    }
+
+    /**
+     * Update existing floor text
+     * @param {string} id - Text ID to update
+     * @param {string} newText - New text content
+     * @param {Object} options - New styling options
+     */
+    updateFloorText(id, newText, options = {}) {
+        this.textManager.updateText(id, newText, options)
+    }
+
+    /**
+     * Remove floor text
+     * @param {string} id - Text ID to remove
+     */
+    removeFloorText(id) {
+        this.textManager.removeText(id)
+    }
+
+    /**
+     * Get the TextManager instance for advanced text operations
+     * @returns {TextManager} - The text manager instance
+     */
+    getTextManager() {
+        return this.textManager
+    }
+
+    /**
      * Get current environment configuration
      * @returns {Object} - Current configuration
      */
@@ -269,6 +312,12 @@ export class EnvironmentManager {
         })
 
         this.environmentObjects = {}
+
+        // Dispose of text manager
+        if (this.textManager) {
+            this.textManager.dispose()
+        }
+
         console.log('Environment disposed')
     }
 }

@@ -146,8 +146,8 @@ export class PixelCharacter {
         varying vec2 vUv;
         void main() {
             vec4 texColor = texture2D(map, vUv);
-            if (texColor.a < 0.5) discard; // Discard transparent pixels
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Solid black for shadow casting
+            // if (texColor.a < 0.5) discard; // Discard transparent pixels
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); // Solid black for shadow casting
         }
     `,
             transparent: true,
@@ -275,7 +275,7 @@ export class PixelCharacter {
         // Sync the shadow caster's position and texture
         if (this.shadowCaster) {
             // Update position with slight offset to avoid z-fighting
-            this.shadowCaster.position.copy(this.position);
+            this.shadowCaster.position.set(this.position.x, this.position.y, this.position.z);
             this.shadowCaster.position.z -= 0.01;
 
             // Make shadow caster face the camera too

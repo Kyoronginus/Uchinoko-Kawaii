@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio</title>
+
+    <!-- Load Silkscreen font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,10 +17,23 @@
             box-sizing: border-box;
         }
 
+        @font-face {
+            font-family: 'Silkscreen';
+            src: url('/fonts/Silkscreen-Regular.ttf') format('truetype');
+        }
+
         body {
             overflow: hidden;
             background: #000;
-            font-family: 'Courier New', monospace;
+            font-family: 'Silkscreen', 'Courier New', monospace;
+        }
+
+        /* Ensure Silkscreen font is loaded and available */
+        .font-preload {
+            font-family: 'Silkscreen';
+            position: absolute;
+            left: -9999px;
+            visibility: hidden;
         }
 
         /* style.css */
@@ -94,6 +112,9 @@
 </head>
 
 <body>
+    <!-- Font preload element to ensure Silkscreen is available -->
+    <div class="font-preload">Silkscreen Font Preload</div>
+
     <div id="container">
         <div id="background-gradient"></div>
         <canvas class="webgl"></canvas>

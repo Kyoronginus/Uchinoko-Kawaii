@@ -7,7 +7,7 @@ export class HD2DRenderer {
         // Main renderer
         this.renderer = new THREE.WebGLRenderer({
             canvas: canvas,
-            antialias: true, // Disable for pixel art look
+            // antialias: true, // Disable for pixel art look
             powerPreference: "high-performance"
         })
         
