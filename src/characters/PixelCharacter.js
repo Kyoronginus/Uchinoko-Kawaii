@@ -130,17 +130,36 @@ export class PixelCharacter {
         const shadowGeometry = new THREE.PlaneGeometry(2, 2); // Match sprite scale
 
         // Use MeshBasicMaterial with alphaMap for precise shadow shape
-        const shadowMaterial = new THREE.MeshBasicMaterial({
+        const shadowMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                map: { value: this.defaultTexture }
+            },
+            vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+            fragmentShader: `
+        uniform sampler2D map;
+        varying vec2 vUv;
+        void main() {
+            vec4 texColor = texture2D(map, vUv);
+            if (texColor.a < 0.5) discard; // Discard transparent pixels
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Solid black for shadow casting
+        }
+    `,
             transparent: true,
-            opacity: 0, // Completely invisible
-            alphaMap: this.defaultTexture,
-            alphaTest: 1, // Cut out transparent parts based on texture alpha
-            side: THREE.DoubleSide // Ensure shadows work from all angles
+            side: THREE.DoubleSide
         });
 
         this.shadowCaster = new THREE.Mesh(shadowGeometry, shadowMaterial);
+
         this.shadowCaster.castShadow = true;
         this.shadowCaster.receiveShadow = false; // Only casts shadows
+        // Update the shader uniform with the current texture
+
 
         // Position it slightly behind the sprite to avoid z-fighting
         this.shadowCaster.position.copy(this.position);
@@ -267,7 +286,7 @@ export class PixelCharacter {
             // Sync the current texture for accurate shadow shape
             if (this.sprite && this.sprite.material && this.sprite.material.map) {
                 // Use the sprite's current texture as alpha map for shadow shape
-                this.shadowCaster.material.alphaMap = this.sprite.material.map;
+                this.shadowCaster.material.uniforms.map.value = this.sprite.material.map;
                 this.shadowCaster.material.needsUpdate = true;
             }
         }
