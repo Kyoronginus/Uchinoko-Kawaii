@@ -4,89 +4,63 @@ export class PixelCharacter {
     constructor(textureUrl, scene, camera = null) {
         this.scene = scene
         this.camera = camera
-        this.position = new THREE.Vector3(0, 1, 0)
+        this.position = new THREE.Vector3(0, 1, 0) // キャラクターの基準Y位置
         this.moveSpeed = 0.05
         this.isMoving = false
-
-        // キャラクターの向き
-        this.direction = 'down' // down, up, left, right
+        this.direction = 'down'
 
         // Animation properties
         this.clock = new THREE.Clock()
-        this.idleTimer = 0; // 5秒放置を数えるタイマーは必要
-        this.animationTime = 0; // ★歩行・放置アニメーション共用のタイマー
-
-        this.isSpecialIdle = false;
-        this.idleFrames = [];
-        this.walkFrames = [];
-
-        // フレームの再生時間
-        this.idleFrameDuration = 0.8;
-        this.walkFrameDuration = 0.20; // 少し速くしました
-
-
-        // Walking animation sequence - start with walking frame 1
-        this.walkAnimationSequence = [1, 0, 2, 0] // walk1 -> default -> walk2 -> default
-        this.walkSequenceIndex = 0
+        this.idleTimer = 0
+        this.animationTime = 0
+        this.isSpecialIdle = false
+        this.idleFrames = []
         this.animations = {
             down: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 },
-            up: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 }, // Placeholder
+            up: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 },
             left: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 },
             right: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 }
         };
-        // Store the default texture
+        this.idleFrameDuration = 0.8
         this.defaultTexture = null
 
-        this.loadIdleFrames() // Load sleepy frames
-        this.loadWalkFrames() // Load walking frames
+        this.loadIdleFrames()
+        this.loadWalkFrames()
         this.setupCharacterSprite(textureUrl)
         this.setupMovement()
     }
 
     setupCharacterSprite(textureUrl) {
-        // テクスチャローダー
         const textureLoader = new THREE.TextureLoader()
+        textureLoader.load(textureUrl, (texture) => {
+            texture.magFilter = THREE.NearestFilter
+            texture.minFilter = THREE.NearestFilter
+            this.defaultTexture = texture
 
-        textureLoader.load(
-            textureUrl,
-            (texture) => {
-                // ピクセルアート用の設定
-                texture.magFilter = THREE.NearestFilter
-                texture.minFilter = THREE.NearestFilter
-                texture.wrapS = THREE.ClampToEdgeWrapping
-                texture.wrapT = THREE.ClampToEdgeWrapping
+            // ★ 見た目用のマテリアル (影を受け取れるようにLambertを使用)
+            const spriteMaterial = new THREE.MeshLambertMaterial({
+                map: texture,
+                transparent: true,
+                alphaTest: 0.5,
+                side: THREE.DoubleSide
+            });
 
-                this.defaultTexture = texture // Store the default texture
-                // スプライト作成
-                // Use MeshLambertMaterial for proper shadow receiving
-                const spriteMaterial = new THREE.MeshLambertMaterial({
-                    map: texture,
-                    transparent: true,
-                    alphaTest: 0.1,
-                    side: THREE.DoubleSide
-                });
+            this.sprite = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), spriteMaterial);
+            this.sprite.receiveShadow = true; // ✅ 他のオブジェクトからの影を自分に表示する
+            this.sprite.castShadow = true;    // ✅ 自分自身が影を落とす
 
-                // ✅ Use a Mesh instead of a Sprite
-                this.sprite = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), spriteMaterial);
-                this.sprite.position.copy(this.position);
-                this.sprite.receiveShadow = true; // Allow the character mesh to receive shadows
+            // ★★★★★ ここからが最重要 ★★★★★
+            // 影の形をテクスチャの透明度に応じて切り抜くための、特殊なマテリアルを設定
+            this.sprite.customDepthMaterial = new THREE.MeshDepthMaterial({
+                depthPacking: THREE.RGBADepthPacking,
+                map: texture,
+                alphaTest: 0.5 // この値より透明なピクセルは影の計算から除外される
+            });
+            // ★★★★★ ここまで ★★★★★
 
-                this.scene.add(this.sprite)
-
-                // Create a shadow-casting plane for the character
-                this.createCharacterShadowCaster()
-
-                console.log('Character sprite loaded successfully')
-
-
-
-            },
-            undefined,
-            (error) => {
-                console.error('Error loading character texture:', error)
-                this.createFallbackCharacter()
-            }
-        )
+            this.scene.add(this.sprite)
+            console.log('Character sprite loaded successfully')
+        })
     }
 
     createFallbackCharacter() {
@@ -126,49 +100,23 @@ export class PixelCharacter {
     }
 
     createCharacterShadowCaster() {
-        // Create a shadow caster that matches the character's visual shape
-        const shadowGeometry = new THREE.PlaneGeometry(2, 2); // Match sprite scale
+        const shadowGeometry = new THREE.PlaneGeometry(2, 2);
 
-        // Use MeshBasicMaterial with alphaMap for precise shadow shape
-        const shadowMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                map: { value: this.defaultTexture }
-            },
-            vertexShader: `
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `,
-            fragmentShader: `
-        uniform sampler2D map;
-        varying vec2 vUv;
-        void main() {
-            vec4 texColor = texture2D(map, vUv);
-            // if (texColor.a < 0.5) discard; // Discard transparent pixels
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); // Solid black for shadow casting
-        }
-    `,
+        // ★ 影を落とす役のマテリアル：alphaMapが使えるStandardMaterialが最適
+        const shadowMaterial = new THREE.MeshStandardMaterial({
+            alphaMap: this.defaultTexture, // 影の形をテクスチャで決める
+            alphaTest: 0.5,                // 透明部分を切り抜くしきい値
             transparent: true,
-            side: THREE.DoubleSide
+            opacity: 0                      // 完全に透明にする
         });
 
         this.shadowCaster = new THREE.Mesh(shadowGeometry, shadowMaterial);
-
-        this.shadowCaster.castShadow = true;
-        this.shadowCaster.receiveShadow = false; // Only casts shadows
-        // Update the shader uniform with the current texture
-
-
-        // Position it slightly behind the sprite to avoid z-fighting
-        this.shadowCaster.position.copy(this.position);
-        this.shadowCaster.position.z -= 0.01;
+        this.shadowCaster.castShadow = true;     // ✅ 影を落とす設定
+        this.shadowCaster.receiveShadow = false; // 影は受け取らない
 
         this.scene.add(this.shadowCaster);
-
-        console.log('Shadow caster created for character');
     }
+
     setupMovement() {
         this.keys = {
             w: false,
@@ -217,77 +165,55 @@ export class PixelCharacter {
     }
 
     update() {
+        // ... (既存の移動・アニメーションのロジックは変更なし) ...
         const deltaTime = this.clock.getDelta();
-        const wasMoving = this.isMoving; // 前回のフレームで動いていたか
+        const wasMoving = this.isMoving;
         const velocity = new THREE.Vector3()
         this.isMoving = (this.keys.w || this.keys.a || this.keys.s || this.keys.d)
 
         if (this.isMoving) {
-            // --- 動いている場合 ---
             this.idleTimer = 0;
             this.isSpecialIdle = false;
-
-            // 停止状態から動き始めた瞬間にタイマーをリセット
-            if (!wasMoving) {
-                this.animationTime = 0;
-            }
-
+            if (!wasMoving) { this.animationTime = 0; }
             this.animationTime += deltaTime;
             this.playWalkAnimation();
-            // Movement logic
             if (this.keys.w) velocity.z -= this.moveSpeed
             if (this.keys.s) velocity.z += this.moveSpeed
             if (this.keys.a) velocity.x -= this.moveSpeed
             if (this.keys.d) velocity.x += this.moveSpeed
-
         } else {
-            // --- 停止している場合 ---
-
-            // 動きから停止した瞬間にタイマーをリセット
             if (wasMoving) {
                 this.animationTime = 0;
                 this.resetToStanding();
             }
-
             this.idleTimer += deltaTime;
             if (this.idleTimer >= 3 && !this.isSpecialIdle) {
                 this.isSpecialIdle = true;
-                this.animationTime = 0; // うたたねアニメ開始時にタイマーをリセット
+                this.animationTime = 0;
             }
-
             if (this.isSpecialIdle) {
                 this.animationTime += deltaTime;
                 this.playIdleAnimation();
             }
         }
 
-        // Update character position
         this.position.add(velocity);
+
+        // 見えるスプライトの位置を更新
         if (this.sprite) {
             this.sprite.position.copy(this.position);
-
-            // Make the character mesh face the camera (billboard effect)
-            if (this.camera) {
-                this.sprite.lookAt(this.camera.position);
-            }
+            if (this.camera) { this.sprite.quaternion.copy(this.camera.quaternion); }
         }
 
-        // Sync the shadow caster's position and texture
+        // ★ shadowCasterの位置とテクスチャを同期させる（最重要）
         if (this.shadowCaster) {
-            // Update position with slight offset to avoid z-fighting
-            this.shadowCaster.position.set(this.position.x, this.position.y, this.position.z);
-            this.shadowCaster.position.z -= 0.01;
+            // 位置を同期（Yは地面の高さに設定して影のズレを防ぐ）
+            this.shadowCaster.position.set(this.position.x, 0.01, this.position.z);
+            if (this.camera) { this.shadowCaster.quaternion.copy(this.camera.quaternion); }
 
-            // Make shadow caster face the camera too
-            if (this.camera) {
-                this.shadowCaster.lookAt(this.camera.position);
-            }
-
-            // Sync the current texture for accurate shadow shape
-            if (this.sprite && this.sprite.material && this.sprite.material.map) {
-                // Use the sprite's current texture as alpha map for shadow shape
-                this.shadowCaster.material.uniforms.map.value = this.sprite.material.map;
-                this.shadowCaster.material.needsUpdate = true;
+            // 現在のアニメーションフレームをalphaMapに設定して、影の形を更新
+            if (this.sprite && this.sprite.material.map) {
+                this.shadowCaster.material.alphaMap = this.sprite.material.map;
             }
         }
     }
@@ -350,18 +276,17 @@ export class PixelCharacter {
         }
     }
 
-    // Replace playWalkAnimation
-    // Replace your playWalkAnimation method with this
     playWalkAnimation() {
         const currentAnim = this.animations[this.direction];
         if (!this.sprite || !currentAnim || currentAnim.frames.length === 0) return;
 
-        // Calculate which frame to show based on the current animation's sequence
         const sequenceIndex = Math.floor(this.animationTime / currentAnim.duration) % currentAnim.sequence.length;
         const frameIndex = currentAnim.sequence[sequenceIndex];
+        const newTexture = currentAnim.frames[frameIndex];
 
-        // Change the sprite's texture to the new frame
-        this.sprite.material.map = currentAnim.frames[frameIndex];
+        // ✅ 見た目と影、両方のテクスチャを同時に更新する
+        this.sprite.material.map = newTexture;
+        this.sprite.customDepthMaterial.map = newTexture;
     }
     resetToStanding() {
         if (!this.sprite) return

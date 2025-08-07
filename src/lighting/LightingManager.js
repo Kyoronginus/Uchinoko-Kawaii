@@ -17,7 +17,7 @@ export class LightingManager {
                 position: { x: 20, y: 10, z: 10 },
                 castShadow: true,
                 shadow: {
-                    mapSize: { width: 256, height: 256 },
+                    mapSize: { width: 256, height: 256 }, // Higher resolution for crisp shadows
                     camera: {
                         near: 0.1,
                         far: 100,
@@ -26,8 +26,8 @@ export class LightingManager {
                         top: 20,
                         bottom: -20
                     },
-                    bias: -0.01,
-                    normalBias: 0.02
+                    bias: -0.005, // Reduced bias for sharper shadows
+                    normalBias: 0.01 // Reduced normal bias
                 }
             }
         }
