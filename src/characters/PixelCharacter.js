@@ -4,8 +4,8 @@ export class PixelCharacter {
     constructor(textureUrl, scene, camera = null) {
         this.scene = scene
         this.camera = camera
-        this.position = new THREE.Vector3(0, 1, 0) // キャラクターの基準Y位置
-        this.moveSpeed = 0.05
+        this.position = new THREE.Vector3(0, 1, 8) // キャラクターの基準Y位置
+        this.moveSpeed = 0.07
         this.isMoving = false
         this.direction = 'down'
 

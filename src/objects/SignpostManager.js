@@ -26,9 +26,9 @@ export class SignpostManager {
             {
                 // Signpost properties
                 modelPath: '/signpost.glb',
-                screenshotPath: '/project_ss/Fibonacci_Detection.png',
+                screenshotPath: '/project_ss/header.png',
                 position: new THREE.Vector3(-10, 0, 5),
-                rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
+                rotation: new THREE.Euler(0, 9 * Math.PI / 6, 0),
                 scale: new THREE.Vector3(2, 2, 2),
                 // Interaction zone properties
                 zoneWidth: 4,
@@ -164,14 +164,13 @@ export class SignpostManager {
     applyTextureToScreen(signpost, texture) {
         signpost.traverse((child) => {
             if (child.isMesh && child.material && child.material.name === 'M_Screen') {
-                // Apply main texture
-                child.material.map = texture
+                // ✅ 古いマテリアルを破棄
+                child.material.dispose(); 
                 
-                // Apply emissive properties for screen glow
-                child.material.emissive = new THREE.Color(0x222222)
-                child.material.emissiveMap = texture
-                child.material.emissiveIntensity = 0.3
-                child.material.needsUpdate = true
+                // ✅ 光の影響を無視する新しいマテリアルを作成
+                child.material = new THREE.MeshBasicMaterial({
+                    map: texture
+                });
             }
         })
     }
