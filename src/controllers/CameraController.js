@@ -6,6 +6,10 @@ export class CameraController {
         this.character = character
         this.followDistance = new THREE.Vector3(0, 3, 12) // キャラクターからの相対位置
         this.lookAtOffset = new THREE.Vector3(0, 1, 0) // 見る位置のオフセット
+
+        // For project detail
+        // this.followDistance = new THREE.Vector3(-8, 3, 5) // キャラクターからの相対位置
+        // this.lookAtOffset = new THREE.Vector3(0, 4, 0) // 見る位置のオフセット
         
         // フリーカメラモード用
         this.freeMode = !character

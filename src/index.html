@@ -18,6 +18,34 @@
             font-family: 'Courier New', monospace;
         }
 
+        /* style.css */
+        #container {
+            position: relative;
+            /* 子要素の位置の基準となる */
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #background-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 紫からピンクがかった黄色へのグラデーション */
+            background: linear-gradient(to bottom, #a881e3, #f5d7b5);
+            z-index: -1;
+            /* canvasの背面に配置 */
+        }
+
+        .webgl {
+            /* canvasを背景の上に重ねる */
+            position: absolute;
+            top: 0;
+            left: 0;
+            outline: none;
+        }
+
         canvas.webgl {
             position: fixed;
             top: 0;
@@ -66,7 +94,10 @@
 </head>
 
 <body>
-    <canvas class="webgl"></canvas>
+    <div id="container">
+        <div id="background-gradient"></div>
+        <canvas class="webgl"></canvas>
+    </div>
     <div class="controls">
         <div>WASD: Move character</div>
         <div>HD-2D Portfolio</div>

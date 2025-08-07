@@ -27,7 +27,7 @@ export class SignpostManager {
                 // Signpost properties
                 modelPath: '/signpost.glb',
                 screenshotPath: '/project_ss/Fibonacci_Detection.png',
-                position: new THREE.Vector3(0, 0, 5),
+                position: new THREE.Vector3(-10, 0, 5),
                 rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(2, 2, 2),
                 // Interaction zone properties

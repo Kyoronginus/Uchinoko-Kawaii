@@ -6,8 +6,8 @@ export class EnvironmentManager {
         this.scene = scene
         this.gltfLoader = new GLTFLoader()
         this.environmentObjects = {}
-        
-        // Environment configuration
+
+        // Environment configurations
         this.config = {
             floor: {
                 modelPath: '/floor.glb',
@@ -34,7 +34,7 @@ export class EnvironmentManager {
     async setupEnvironment() {
         this.setBackgroundColor()
         await this.loadFloor()
-        
+
         console.log('Environment setup complete')
     }
 
@@ -96,10 +96,10 @@ export class EnvironmentManager {
      */
     setupFloorMesh(floorMesh) {
         const config = this.config.floor
-        
+
         // Set position
         floorMesh.position.set(config.position.x, config.position.y, config.position.z)
-        
+
         // Configure shadows for all child meshes
         floorMesh.traverse((child) => {
             if (child.isMesh) {
@@ -107,7 +107,7 @@ export class EnvironmentManager {
                 child.castShadow = config.castShadow
             }
         })
-        
+
         this.scene.add(floorMesh)
         this.environmentObjects.floor = floorMesh
     }
@@ -118,9 +118,9 @@ export class EnvironmentManager {
      */
     setupFloorScene(scene) {
         const config = this.config.floor
-        
+
         console.log('Available children:', scene.children.map(child => child.name))
-        
+
         // Configure shadows for all meshes in the scene
         scene.traverse((child) => {
             if (child.isMesh) {
@@ -128,7 +128,7 @@ export class EnvironmentManager {
                 child.castShadow = config.castShadow
             }
         })
-        
+
         this.scene.add(scene)
         this.environmentObjects.floor = scene
     }
@@ -138,21 +138,20 @@ export class EnvironmentManager {
      */
     createFallbackFloor() {
         const config = this.config.fallbackFloor
-        
+
         const floorGeometry = new THREE.PlaneGeometry(config.size.width, config.size.height)
-        const floorMaterial = new THREE.MeshLambertMaterial({
+        const floorMaterial = new THREE.MeshStandardMaterial({
             color: config.color,
-            transparent: true,
-            opacity: config.opacity
-        })
-        
+            roughness: 0.1,//表面の粗さ（1に近いほどマット）
+            metalness: 0.9 // 金属っぽさ
+        });
         const floor = new THREE.Mesh(floorGeometry, floorMaterial)
         floor.rotation.x = -Math.PI / 2 // Lay flat
         floor.receiveShadow = config.receiveShadow
-        
+
         this.scene.add(floor)
         this.environmentObjects.fallbackFloor = floor
-        
+
         console.log('Fallback floor created')
     }
 
@@ -204,14 +203,14 @@ export class EnvironmentManager {
      */
     setFloorShadowReceiving(receiveShadow) {
         const floor = this.environmentObjects.floor || this.environmentObjects.fallbackFloor
-        
+
         if (floor) {
             floor.traverse((child) => {
                 if (child.isMesh) {
                     child.receiveShadow = receiveShadow
                 }
             })
-            
+
             this.config.floor.receiveShadow = receiveShadow
             this.config.fallbackFloor.receiveShadow = receiveShadow
         }
@@ -231,18 +230,18 @@ export class EnvironmentManager {
      */
     updateConfig(newConfig) {
         this.config = { ...this.config, ...newConfig }
-        
+
         // Apply background color if changed
         if (newConfig.background?.color) {
             this.setBackground(newConfig.background.color)
         }
-        
+
         // Update floor shadow settings if changed
-        if (newConfig.floor?.receiveShadow !== undefined || 
+        if (newConfig.floor?.receiveShadow !== undefined ||
             newConfig.fallbackFloor?.receiveShadow !== undefined) {
             this.setFloorShadowReceiving(
-                newConfig.floor?.receiveShadow ?? 
-                newConfig.fallbackFloor?.receiveShadow ?? 
+                newConfig.floor?.receiveShadow ??
+                newConfig.fallbackFloor?.receiveShadow ??
                 this.config.floor.receiveShadow
             )
         }
@@ -255,7 +254,7 @@ export class EnvironmentManager {
         Object.keys(this.environmentObjects).forEach(name => {
             const object = this.environmentObjects[name]
             this.scene.remove(object)
-            
+
             // Dispose of geometries and materials
             object.traverse((child) => {
                 if (child.geometry) child.geometry.dispose()
@@ -268,7 +267,7 @@ export class EnvironmentManager {
                 }
             })
         })
-        
+
         this.environmentObjects = {}
         console.log('Environment disposed')
     }
