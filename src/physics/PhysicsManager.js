@@ -40,7 +40,7 @@ export class PhysicsManager {
     createBoxShapeFromObject(object3d) {
         const box = new THREE.Box3().setFromObject(object3d)
         const size = box.getSize(new THREE.Vector3())
-        const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2)
+        const halfExtents = new CANNON.Vec3(size.x / 2, size.y/2 , size.z / 2)
         const shape = new CANNON.Box(halfExtents)
         const center = box.getCenter(new THREE.Vector3())
         return { shape, center }
@@ -80,7 +80,7 @@ export class PhysicsManager {
         // 物理ボディの中心位置を、見た目の中心位置から、高さの半分だけ下にずらす
         if (shape === 'box') {
             const halfHeight = cannonShape.halfExtents.y;
-            body.position.set(center.x, center.y - halfHeight, center.z);
+            body.position.set(center.x, center.y + halfHeight, center.z);
         } else { // 'sphere'の場合は中心が基点でOK
             body.position.set(center.x, center.y, center.z)
         }
@@ -89,7 +89,7 @@ export class PhysicsManager {
         body.linearDamping = linearDamping
         body.angularDamping = angularDamping
 
-        // Add to world and maps
+        // Add to world and mapsss
         this.world.addBody(body)
         this.bodyToMesh.set(body, mesh)
         this.meshToBody.set(mesh, body)
