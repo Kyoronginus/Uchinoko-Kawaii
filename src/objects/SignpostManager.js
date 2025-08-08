@@ -13,7 +13,7 @@ export class SignpostManager {
             {
                 // Signpost properties
                 modelPath: '/signpost.glb',
-                screenshotPath: '/project_ss/ColorAnalyzer.png',
+                screenshotPath: '/project_ss/oc_2.png',
                 position: new THREE.Vector3(10, 0, 5),
                 rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(2, 2, 2),
@@ -23,6 +23,7 @@ export class SignpostManager {
                 url: 'https://example.com/project_a',
                 name: 'Visit ColorAnalyzer'
             },
+
             {
                 // Signpost properties
                 modelPath: '/signpost.glb',
@@ -30,7 +31,7 @@ export class SignpostManager {
                 position: new THREE.Vector3(-10, 0, 5),
                 rotation: new THREE.Euler(0, 9 * Math.PI / 6, 0),
                 scale: new THREE.Vector3(2, 2, 2),
-                // Interaction zone properties
+                // Interaction zone propertiesS
                 zoneWidth: 4,
                 zoneDepth: 4,
                 url: 'https://fibonacci-spiral-detecti-bf743.web.app/',

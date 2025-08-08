@@ -3,6 +3,7 @@ import { CameraController } from './controllers/CameraController.js'
 import { HD2DRenderer } from './rendering/HD2DRenderer.js'
 import { PixelCharacter } from './characters/PixelCharacter.js'
 import { SignpostManager } from './objects/SignpostManager.js'
+import { UntexturedModelManager } from './objects/UntexturedModelManager.js'
 import { LightingManager } from './lighting/LightingManager.js'
 import { ProjectZoneManager } from './interaction/ProjectZoneManager.js'
 import { EnvironmentManager } from './environment/EnvironmentManager.js'
@@ -35,6 +36,7 @@ const hd2dRenderer = new HD2DRenderer(canvas, sizes)
 
 // Initialize managers
 const signpostManager = new SignpostManager(scene)
+const untexturedModelManager = new UntexturedModelManager(scene)
 const lightingManager = new LightingManager(scene)
 const environmentManager = new EnvironmentManager(scene)
 
@@ -53,6 +55,10 @@ async function initializeScene() {
 
         // Load all signposts
         await signpostManager.loadAllSignposts()
+        await untexturedModelManager.loadAllModels()
+
+        // Setup collision detection for character
+        character.setCollisionManager(untexturedModelManager)
 
         // Initialize project zone manager with loaded projects
         projectZoneManager = new ProjectZoneManager(signpostManager.getProjects())
@@ -82,12 +88,12 @@ function setupExampleText() {
     )
 
     // Add directional text
-    environmentManager.addFloorText('← Projects →',
+    environmentManager.addFloorText('← Artworks →',
         { x: 0, z: 5 },
         {
             font: '16px Silkscreen',
             color: '#ffffffff',
-            outline: true,
+            // outline: true,
             outlineColor: '#1cf7ffff',
             scale: 2
         }
@@ -119,6 +125,10 @@ function animate() {
 
     // Update character
     character.update()
+
+    // Update physics for untextured models
+    const deltaTime = 1/60; // Approximate delta time for 60fps
+    untexturedModelManager.updatePhysics(deltaTime)
 
     // Update project zones if manager is initialized
     if (projectZoneManager) {
