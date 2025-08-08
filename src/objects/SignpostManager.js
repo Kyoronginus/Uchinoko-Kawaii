@@ -2,8 +2,9 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 export class SignpostManager {
-    constructor(scene) {
+    constructor(scene, physicsManager = null) {
         this.scene = scene
+        this.physics = physicsManager
         this.gltfLoader = new GLTFLoader()
         this.textureLoader = new THREE.TextureLoader()
         this.signposts = []
@@ -23,20 +24,21 @@ export class SignpostManager {
                 url: 'https://example.com/project_a',
                 name: 'Visit ColorAnalyzer'
             },
-
             {
                 // Signpost properties
                 modelPath: '/signpost.glb',
                 screenshotPath: '/project_ss/header.png',
                 position: new THREE.Vector3(-10, 0, 5),
-                rotation: new THREE.Euler(0, 9 * Math.PI / 6, 0),
+                rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(2, 2, 2),
                 // Interaction zone propertiesS
                 zoneWidth: 4,
                 zoneDepth: 4,
                 url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
                 name: 'Visit Fibonacci Detection'
-            }
+            },
+
+
         ]
     }
 
@@ -75,14 +77,19 @@ export class SignpostManager {
                         .then(() => {
                             // Configure shadows
                             this.configureShadows(signpost)
-                            
+
+                            // Add static physics body if available
+                            if (this.physics) {
+                                this.physics.addBodyForMesh(signpost, { type: 'static', shape: 'box', mass: 0, friction: 0.6 })
+                            }
+
                             // Add to scene and track
                             this.scene.add(signpost)
                             this.signposts.push({
                                 mesh: signpost,
                                 project: project
                             })
-                            
+
                             console.log(`Loaded signpost: ${project.name}`)
                             resolve(signpost)
                         })

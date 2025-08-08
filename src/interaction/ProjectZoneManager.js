@@ -6,7 +6,7 @@ export class ProjectZoneManager {
         this.activeZone = null
         this.linkContainer = null
         this.linkElement = null
-        
+
         this.setupUI()
     }
 
@@ -18,7 +18,7 @@ export class ProjectZoneManager {
         if (this.linkContainer) {
             this.linkElement = this.linkContainer.querySelector('a')
         }
-        
+
         if (!this.linkContainer || !this.linkElement) {
             console.warn('Project link UI elements not found')
         }
@@ -54,33 +54,44 @@ export class ProjectZoneManager {
      * @param {Object} project - Project configuration with zone properties
      * @returns {boolean} - True if character is in zone
      */
-    isCharacterInZone(characterPosition, project) {
-        const halfWidth = project.zoneWidth / 2
-        const halfDepth = project.zoneDepth / 2
+    // In src/interaction/ProjectZoneManager.js
 
+    isCharacterInZone(characterPosition, project, signpostMesh) {
+        if (!signpostMesh) return false;
+
+        // Create an inverse matrix of the signpost's world transformation
+        const inverseMatrix = new THREE.Matrix4();
+        inverseMatrix.copy(signpostMesh.matrixWorld).invert();
+
+        // Transform the character's world position into the signpost's local space
+        const localCharPos = characterPosition.clone().applyMatrix4(inverseMatrix);
+
+        const halfWidth = project.zoneWidth / 2;
+        const halfDepth = project.zoneDepth / 2;
+
+        // Now, perform a simple AABB check in the signpost's local space
         return (
-            characterPosition.x > project.position.x - halfWidth &&
-            characterPosition.x < project.position.x + halfWidth &&
-            characterPosition.z > project.position.z - halfDepth &&
-            characterPosition.z < project.position.z + halfDepth
-        )
+            localCharPos.x > -halfWidth &&
+            localCharPos.x < halfWidth &&
+            localCharPos.z > -halfDepth &&
+            localCharPos.z < halfDepth
+        );
     }
-
     /**
      * Handle entering a project zone
      * @param {Object} project - Project configuration
      */
     enterZone(project) {
         this.activeZone = project
-        
+
         if (this.linkElement && this.linkContainer) {
             this.linkElement.href = project.url
             this.linkElement.textContent = project.name
             this.linkContainer.classList.remove('hidden')
         }
-        
+
         console.log(`Entered project zone: ${project.name}`)
-        
+
         // Dispatch custom event for other systems to listen to
         this.dispatchZoneEvent('zoneEnter', project)
     }
@@ -91,13 +102,13 @@ export class ProjectZoneManager {
     exitZone() {
         const previousZone = this.activeZone
         this.activeZone = null
-        
+
         if (this.linkContainer) {
             this.linkContainer.classList.add('hidden')
         }
-        
+
         console.log(`Exited project zone: ${previousZone?.name || 'unknown'}`)
-        
+
         // Dispatch custom event
         this.dispatchZoneEvent('zoneExit', previousZone)
     }
@@ -114,7 +125,7 @@ export class ProjectZoneManager {
                 activeZone: this.activeZone
             }
         })
-        
+
         window.dispatchEvent(event)
     }
 
@@ -155,7 +166,7 @@ export class ProjectZoneManager {
      */
     addDebugHelpers(scene, visible = false) {
         this.debugHelpers = []
-        
+
         this.projects.forEach((project, index) => {
             // Create a wireframe box to visualize the zone
             const geometry = new THREE.BoxGeometry(
@@ -163,23 +174,23 @@ export class ProjectZoneManager {
                 0.1,
                 project.zoneDepth
             )
-            
+
             const material = new THREE.MeshBasicMaterial({
                 color: 0x00ff00,
                 wireframe: true,
                 transparent: true,
                 opacity: 0.3
             })
-            
+
             const helper = new THREE.Mesh(geometry, material)
             helper.position.copy(project.position)
             helper.position.y = 0.05 // Slightly above ground
             helper.visible = visible
-            
+
             scene.add(helper)
             this.debugHelpers.push(helper)
         })
-        
+
         console.log(`Added ${this.debugHelpers.length} zone debug helpers`)
     }
 
@@ -201,7 +212,7 @@ export class ProjectZoneManager {
      */
     updateProjects(newProjects) {
         this.projects = newProjects
-        
+
         // Exit current zone if it no longer exists
         if (this.activeZone) {
             const stillExists = newProjects.some(project => project === this.activeZone)
@@ -226,7 +237,7 @@ export class ProjectZoneManager {
      */
     dispose(scene) {
         this.forceExit()
-        
+
         if (this.debugHelpers && scene) {
             this.debugHelpers.forEach(helper => {
                 scene.remove(helper)
@@ -235,11 +246,11 @@ export class ProjectZoneManager {
             })
             this.debugHelpers = []
         }
-        
+
         this.projects = []
         this.linkContainer = null
         this.linkElement = null
-        
+
         console.log('ProjectZoneManager disposed')
     }
 }

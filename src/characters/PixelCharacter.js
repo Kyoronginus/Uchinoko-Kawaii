@@ -4,8 +4,8 @@ export class PixelCharacter {
     constructor(textureUrl, scene, camera = null) {
         this.scene = scene
         this.camera = camera
-        this.position = new THREE.Vector3(0, 0.9, 8) // キャラクターの基準Y位置
-        this.moveSpeed = 0.1
+        this.position = new THREE.Vector3(0, 0.9, 8) // キャラクターの基準Y位置a
+        this.moveSpeed = 2
         this.isMoving = false
         this.direction = 'down'
         this.collisionManager = null // Will be set by external code
@@ -198,9 +198,6 @@ export class PixelCharacter {
             }
         }
 
-        // Apply movement with collision detection
-        this.applyMovementWithCollision(velocity);
-
         // 見えるスプライトの位置を更新
         if (this.sprite) {
             this.sprite.position.copy(this.position);
@@ -220,52 +217,19 @@ export class PixelCharacter {
         }
     }
     /**
-     * Set the collision manager for this character
-     * @param {UntexturedModelManager} collisionManager - Manager that handles collision detection
+     * Return desired velocity vector from input, to be applied to physics body
      */
-    setCollisionManager(collisionManager) {
-        this.collisionManager = collisionManager;
+    getDesiredVelocity() {
+        const v = new THREE.Vector3()
+        if (this.keys) {
+            if (this.keys.w) v.z -= this.moveSpeed
+            if (this.keys.s) v.z += this.moveSpeed
+            if (this.keys.a) v.x -= this.moveSpeed
+            if (this.keys.d) v.x += this.moveSpeed
+        }
+        return v
     }
 
-    /**
-     * Apply movement with collision detection
-     * @param {THREE.Vector3} velocity - Desired movement velocity
-     */
-    applyMovementWithCollision(velocity) {
-        if (velocity.length() === 0) {
-            return; // No movement, no collision check needed
-        }
-
-        const currentPosition = this.position.clone()
-        const proposedPosition = currentPosition.clone().add(velocity)
-
-        // Check for collisions if collision manager is available
-        if (this.collisionManager) {
-            const collisionResult = this.collisionManager.checkCollisions(currentPosition, proposedPosition)
-
-            if (collisionResult.collision) {
-                // Use corrected position to avoid passing through objects
-                this.position.copy(collisionResult.correctedPosition)
-
-                // Handle any interactions
-                for (const interaction of collisionResult.interactions) {
-                    if (interaction.callback) {
-                        interaction.callback(this, interaction.model, interaction.item)
-                    } else {
-                        // Default interaction behavior
-                        console.log(`Character interacted with: ${interaction.item.modelPath}`)
-                    }
-                }
-            } else {
-                // No collision, apply normal movement
-                this.position.copy(proposedPosition)
-            }
-        } else {
-            // No collision manager, apply movement directly (fallback behavior)
-            this.position.copy(proposedPosition)
-        }
-    }
-    
 
     loadIdleFrames() {
         const textureLoader = new THREE.TextureLoader()

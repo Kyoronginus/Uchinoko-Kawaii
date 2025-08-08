@@ -8,24 +8,76 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
  * - Includes special handling for the "m_screen" model type (no shadows)
  */
 export class UntexturedModelManager {
-    constructor(scene) {
+    constructor(scene, physicsManager = null) {
         this.scene = scene
+        this.physics = physicsManager
+        this.characterBody = null
         this.gltfLoader = new GLTFLoader()
         this.models = []
 
         this.items = [
             {
-                modelPath: '/VENNA_TEXT.glb',
-                position: new THREE.Vector3(0, 0, -8),
+                modelPath: '/letters_3D/V.glb',
+                position: new THREE.Vector3(-2, 0, 2),
                 rotation: new THREE.Euler(0, 0, 0),
-                scale: new THREE.Vector3(2, 2, 2),
+                scale: new THREE.Vector3(3, 3, 3),
                 type: 'generic',
                 enableCollision: true,
                 enablePhysics: true,
-                collisionRadius: 2.0,
                 interactionCallback: this.createTextInteractionCallback(),
-                color: 0xffffff
-            }
+            },
+            {
+                modelPath: '/letters_3D/E.glb',
+                position: new THREE.Vector3(-1, 0, 2),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(3, 3, 3),
+                type: 'generic',
+                enableCollision: true,
+                enablePhysics: true,
+                interactionCallback: this.createTextInteractionCallback(),
+            },
+            {
+                modelPath: '/letters_3D/N.glb',
+                position: new THREE.Vector3(0, 0, 2),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(3, 3, 3),
+                type: 'generic',
+                enableCollision: true,
+                enablePhysics: true,
+                interactionCallback: this.createTextInteractionCallback(),
+            },
+            {
+                modelPath: '/letters_3D/N.glb',
+                position: new THREE.Vector3(1, 0, 2),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(3, 3, 3),
+                type: 'generic',
+                enableCollision: true,
+                enablePhysics: true,
+                interactionCallback: this.createTextInteractionCallback(),
+            },
+            {
+                modelPath: '/letters_3D/A.glb',
+                position: new THREE.Vector3(2, 0, 2),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(3, 3, 3),
+                type: 'generic',
+                enableCollision: true,
+                enablePhysics: true,
+                interactionCallback: this.createTextInteractionCallback(),
+            },
+            {
+                modelPath: '/letters_3D/VENNA_TEXT.glb',
+                position: new THREE.Vector3(0, 0, -4),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(4, 4, 4),
+                type: 'generic',
+                enableCollision: true,
+                enablePhysics: true,
+                // collisionRadius: 2.0,
+                interactionCallback: this.createTextInteractionCallback(),
+                // color: 0xffffff
+            },
         ]
     }
 
@@ -124,7 +176,7 @@ export class UntexturedModelManager {
                         child.material.dispose && child.material.dispose()
                     }
                 }
-                child.material = new THREE.MeshBasicMaterial({ color })
+                child.material = new THREE.MeshLambertMaterial({ color })
             }
         })
     }
@@ -150,38 +202,40 @@ export class UntexturedModelManager {
     }
 
     /**
-     * Setup collision detection and physics for a model
+     * Setup physics for a model using cannon-es via PhysicsManager
      * @param {THREE.Object3D} root - The model root
      * @param {Object} item - Configuration object
-     * @returns {Object} Collision data for this model
+     * @returns {Object} Physics data for this model
      */
     setupCollisionAndPhysics(root, item) {
-        if (!item.enableCollision && !item.enablePhysics) {
+        if (!this.physics || (!item.enableCollision && !item.enablePhysics)) {
             return null
         }
 
-        // Calculate bounding box for the model
-        const box = new THREE.Box3().setFromObject(root)
-        const center = box.getCenter(new THREE.Vector3())
-        const size = box.getSize(new THREE.Vector3())
+        // Build options from item
+        const physicsOptions = {
+            type: item.static ? 'static' : 'dynamic',
+            shape: item.physicsShape || 'box', // 'box' | 'sphere'
+            mass: typeof item.mass === 'number' ? item.mass : 1,
+            friction: typeof item.friction === 'number' ? item.friction : 0.3,
+            restitution: typeof item.restitution === 'number' ? item.restitution : 0.1,
+            linearDamping: typeof item.linearDamping === 'number' ? item.linearDamping : 0.2,
+            angularDamping: typeof item.angularDamping === 'number' ? item.angularDamping : 0.4
+        }
 
-        // Use configured collision radius or calculate from bounding box
-        const radius = item.collisionRadius || Math.max(size.x, size.z) / 2
+        const body = this.physics.addBodyForMesh(root, physicsOptions)
 
-        const collisionData = {
-            enabled: item.enableCollision || false,
-            physics: item.enablePhysics || false,
-            center: center,
-            radius: radius,
-            boundingBox: box,
+        const data = {
+            enabled: true,
+            physics: true,
+            body,
             interactionCallback: item.interactionCallback || null,
             lastInteractionTime: 0
         }
 
-        // Store collision data in the model's userData for easy access
-        root.userData.collision = collisionData
-
-        return collisionData
+        // Attach to userData
+        root.userData.physics = data
+        return data
     }
 
     /**

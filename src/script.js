@@ -8,6 +8,7 @@ import { LightingManager } from './lighting/LightingManager.js'
 import { ProjectZoneManager } from './interaction/ProjectZoneManager.js'
 import { EnvironmentManager } from './environment/EnvironmentManager.js'
 import { TextManager } from './environment/TextManager.js';
+import { PhysicsManager } from './physics/PhysicsManager.js'
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
 
@@ -35,8 +36,9 @@ const cameraController = new CameraController(camera, character)
 const hd2dRenderer = new HD2DRenderer(canvas, sizes)
 
 // Initialize managers
-const signpostManager = new SignpostManager(scene)
-const untexturedModelManager = new UntexturedModelManager(scene)
+const physicsManager = new PhysicsManager()
+const signpostManager = new SignpostManager(scene, physicsManager)
+const untexturedModelManager = new UntexturedModelManager(scene, physicsManager)
 const lightingManager = new LightingManager(scene)
 const environmentManager = new EnvironmentManager(scene)
 
@@ -44,7 +46,7 @@ const environmentManager = new EnvironmentManager(scene)
 let projectZoneManager = null
 const textManager = new TextManager(scene);
 textManager.createWelcomeText();
-// Initialize the scene asynchronously
+// Initialize the scene asynchronouslya
 async function initializeScene() {
     try {
         // Setup lighting
@@ -57,8 +59,8 @@ async function initializeScene() {
         await signpostManager.loadAllSignposts()
         await untexturedModelManager.loadAllModels()
 
-        // Setup collision detection for character
-        character.setCollisionManager(untexturedModelManager)
+        // Create character physics body and keep it in sync
+        character.physicsBody = physicsManager.addCharacterBody(character.getPosition(), 0.5, 1)
 
         // Initialize project zone manager with loaded projects
         projectZoneManager = new ProjectZoneManager(signpostManager.getProjects())
@@ -123,12 +125,29 @@ initializeScene()
 function animate() {
     requestAnimationFrame(animate);
 
-    // Update character
+    // Update character input and visuals (will set desired velocity)
+    const deltaTime = 1/60; // Approximate delta time for 60fps
     character.update()
 
-    // Update physics for untextured models
-    const deltaTime = 1/60; // Approximate delta time for 60fps
-    untexturedModelManager.updatePhysics(deltaTime)
+    // Drive the character's physics body from input
+    if (character.physicsBody) {
+        // Set horizontal velocity from input (use character.moveSpeed)
+        const desiredVel = character.getDesiredVelocity ? character.getDesiredVelocity() : new THREE.Vector3()
+        character.physicsBody.velocity.x = desiredVel.x
+        character.physicsBody.velocity.z = desiredVel.z
+        // Optional: keep character upright on ground plane
+        character.physicsBody.position.y = Math.max(character.physicsBody.position.y, 0.9)
+    }
+
+    // Step physics and sync meshes
+    physicsManager.step(deltaTime)
+
+    // Sync character position from physics
+    if (character.physicsBody && character.sprite) {
+        const p = character.physicsBody.position
+        character.position.set(p.x, p.y, p.z)
+        character.sprite.position.copy(character.position)
+    }
 
     // Update project zones if manager is initialized
     if (projectZoneManager) {
