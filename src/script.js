@@ -2,8 +2,7 @@ import * as THREE from 'three'
 import { CameraController } from './controllers/CameraController.js'
 import { HD2DRenderer } from './rendering/HD2DRenderer.js'
 import { PixelCharacter } from './characters/PixelCharacter.js'
-import { SignpostManager } from './objects/SignpostManager.js'
-import { UntexturedModelManager } from './objects/UntexturedModelManager.js'
+import { ModelManager } from './objects/ModelManager.js'
 import { LightingManager } from './lighting/LightingManager.js'
 import { ProjectZoneManager } from './interaction/ProjectZoneManager.js'
 import { EnvironmentManager } from './environment/EnvironmentManager.js'
@@ -38,8 +37,7 @@ const hd2dRenderer = new HD2DRenderer(canvas, sizes)
 
 // Initialize managers
 const physicsManager = new PhysicsManager()
-const signpostManager = new SignpostManager(scene, physicsManager)
-const untexturedModelManager = new UntexturedModelManager(scene, physicsManager)
+const modelManager = new ModelManager(scene, physicsManager)
 const lightingManager = new LightingManager(scene)
 const environmentManager = new EnvironmentManager(scene)
 
@@ -56,15 +54,16 @@ async function initializeScene() {
         // Setup environment (floor, background, etc.)
         await environmentManager.setupEnvironment()
 
-        // Load all signposts
-        await signpostManager.loadAllSignposts()
-        await untexturedModelManager.loadAllModels()
+        // Load all models (both untextured models and signposts)
+        await modelManager.loadAllModels()
 
         // Create character physics body and keep it in sync
         character.physicsBody = physicsManager.addCharacterBody(character.getPosition(), 0.5, 1)
 
-        // Initialize project zone manager with loaded projects
-        projectZoneManager = new ProjectZoneManager(signpostManager.getProjects())
+        // Initialize project zone manager with loaded signpost models
+        const signpostModels = modelManager.getModelsByType('signpost')
+        const projects = signpostModels.map(modelEntry => modelEntry.item)
+        projectZoneManager = new ProjectZoneManager(projects)
 
         // Add some example floor text
         setupExampleText()

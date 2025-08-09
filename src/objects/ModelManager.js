@@ -1,0 +1,481 @@
+import * as THREE from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
+/**
+ * Unified manager for all 3D models in the scene - both untextured models and signposts
+ * Uses consistent physics behavior with configurable mass (high mass = immovable like signposts)
+ */
+export class ModelManager {
+    constructor(scene, physicsManager = null) {
+        this.scene = scene
+        this.physics = physicsManager
+        this.gltfLoader = new GLTFLoader()
+        this.textureLoader = new THREE.TextureLoader()
+        this.models = []
+
+        // Unified model configurations
+        this.items = [
+            // Untextured models (letters/text) - low mass, movable
+            {
+                modelPath: '/letters_3D/V.glb',
+                position: new THREE.Vector3(-2, 0, 9),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 2,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/letters_3D/E.glb',
+                position: new THREE.Vector3(-1, 0, 9),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 2,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/letters_3D/N.glb',
+                position: new THREE.Vector3(0, 0, 9),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 2,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/letters_3D/N.glb',
+                position: new THREE.Vector3(1, 0, 9),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 2,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/letters_3D/A.glb',
+                position: new THREE.Vector3(2, 0, 9),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 2,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/letters_3D/VENNA_TEXT.glb',
+                position: new THREE.Vector3(0, 0, -4),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(4, 4, 4),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'sphere',
+                mass: 0.3,
+                interactionCallback: null, // Will be set during loading
+            },
+            // Signposts - very high mass, effectively immovable
+            {
+                modelPath: '/signpost.glb',
+                screenshotPath: '/project_ss/oc_2.png',
+                position: new THREE.Vector3(10, 0, 5),
+                rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(2, 2, 2),
+                type: 'signpost',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 10000, // Very high mass = effectively immovable
+                friction: 0.8,
+                physicsShape: 'box',
+                // Signpost-specific properties
+                zoneWidth: 4,
+                zoneDepth: 4,
+                url: 'https://example.com/project_a',
+                name: 'Visit ColorAnalyzer'
+            },
+            {
+                modelPath: '/signpost.glb',
+                screenshotPath: '/project_ss/header.png',
+                position: new THREE.Vector3(-10, 0, 5),
+                rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(2, 2, 2),
+                type: 'signpost',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 10000, // Very high mass = effectively immovable
+                friction: 0.8,
+                physicsShape: 'box',
+                // Signpost-specific properties
+                zoneWidth: 4,
+                zoneDepth: 4,
+                url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
+                name: 'Visit Fibonacci Detection'
+            }
+        ]
+    }
+
+    /**
+     * Initialize and load all models
+     */
+    async loadAllModels() {
+        const loadPromises = this.items.map(item => this.loadModel(item))
+        try {
+            await Promise.all(loadPromises)
+            console.log(`Successfully loaded ${this.models.length} models`)
+        } catch (error) {
+            console.error('Error loading models:', error)
+        }
+    }
+
+    /**
+     * Load a single model and prepare it for rendering
+     * @param {Object} item - Configuration object
+     * @returns {Promise<THREE.Object3D>} Resolves with the loaded model root
+     */
+    loadModel(item) {
+        return new Promise((resolve, reject) => {
+            this.gltfLoader.load(
+                item.modelPath,
+                async (gltf) => {
+                    const root = gltf.scene
+
+                    // Apply transform
+                    this.applyTransformation(root, item)
+
+                    // Apply materials based on type
+                    if (item.type === 'untextured') {
+                        this.applyBasicMaterials(root, item)
+                    } else if (item.type === 'signpost') {
+                        await this.applySignpostMaterials(root, item)
+                    }
+
+                    // Configure shadows
+                    this.configureShadows(root, item)
+
+                    // Set interaction callback based on type
+                    if (item.type === 'untextured' && !item.interactionCallback) {
+                        item.interactionCallback = this.createTextInteractionCallback()
+                    }
+
+                    // Setup physics
+                    const physicsData = this.setupPhysics(root, item)
+
+                    // Add to scene and track
+                    this.scene.add(root)
+                    this.models.push({
+                        mesh: root,
+                        item,
+                        physics: physicsData
+                    })
+
+                    console.log(`Loaded ${item.type} model: ${item.modelPath}`)
+                    resolve(root)
+                },
+                (progress) => {
+                    if (progress.total > 0) {
+                        console.log(`Loading ${item.modelPath}: ${(progress.loaded / progress.total * 100).toFixed(1)}%`)
+                    }
+                },
+                (error) => {
+                    console.error(`Failed to load model: ${item.modelPath}`, error)
+                    reject(error)
+                }
+            )
+        })
+    }
+
+    /**
+     * Apply position, rotation, and scale
+     */
+    applyTransformation(object3d, item) {
+        if (item.position) object3d.position.copy(item.position)
+        if (item.rotation) object3d.rotation.copy(item.rotation)
+        if (item.scale) object3d.scale.copy(item.scale)
+    }
+
+    /**
+     * Apply basic materials for untextured models
+     */
+    applyBasicMaterials(root, item) {
+        const color = (item && typeof item.color !== 'undefined') ? item.color : 0xffffff
+
+        root.traverse((child) => {
+            if (child.isMesh) {
+                // Mark screen-like parts before disposing original materials
+                const hadScreenMaterial = !!(child.material && typeof child.material.name === 'string' && /m[_ ]?screen/i.test(child.material.name))
+                const hadScreenName = !!(child.name && /m[_ ]?screen/i.test(child.name))
+                if (hadScreenMaterial || hadScreenName) {
+                    child.userData.isScreenPart = true
+                }
+
+                // Dispose old materials to prevent leaks
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(m => m.dispose && m.dispose())
+                    } else {
+                        child.material.dispose && child.material.dispose()
+                    }
+                }
+                child.material = new THREE.MeshLambertMaterial({ color })
+            }
+        })
+    }
+
+    /**
+     * Apply signpost materials (with screenshot texture)
+     */
+    async applySignpostMaterials(root, item) {
+        if (!item.screenshotPath) return
+
+        try {
+            const texture = await this.loadTexture(item.screenshotPath)
+            this.configureTexture(texture)
+            this.applyTextureToScreen(root, texture)
+        } catch (error) {
+            console.error(`Failed to load screenshot for signpost: ${item.screenshotPath}`, error)
+        }
+    }
+
+    /**
+     * Load texture as Promise
+     */
+    loadTexture(path) {
+        return new Promise((resolve, reject) => {
+            this.textureLoader.load(path, resolve, undefined, reject)
+        })
+    }
+
+    /**
+     * Configure texture for pixel-art style
+     */
+    configureTexture(texture) {
+        // Pixel art texture settings
+        texture.magFilter = THREE.NearestFilter
+        texture.minFilter = THREE.NearestFilter
+        texture.wrapS = THREE.RepeatWrapping; // 水平方向の繰り返しを有効に
+        texture.repeat.x = -1;
+        texture.wrapT = THREE.ClampToEdgeWrapping // 繰り返しを無効に
+    }
+    /**
+         * Apply texture to screen material
+         */
+    applyTextureToScreen(signpost, texture) {
+        signpost.traverse((child) => {
+            if (child.isMesh && child.material && child.material.name === 'M_Screen') {
+                child.material = new THREE.MeshBasicMaterial({ map: texture });
+                // テクスチャの上下反転を修正
+                // texture.flipY = false;
+                texture.needsUpdate = true; // テクスチャの更新をThree.jsに通知
+            }
+        });
+    }
+    /**
+     * Configure shadow properties
+     */
+    configureShadows(root, item) {
+        const modelIsMScreen = (item && item.type === 'm_screen')
+        root.traverse((child) => {
+            if (child.isMesh) {
+                const meshIsScreenPart = !!child.userData.isScreenPart || (child.name && /m[_ ]?screen/i.test(child.name))
+                const disableCasting = modelIsMScreen || meshIsScreenPart
+
+                // Always allow receiving shadows
+                child.receiveShadow = true
+                // Only disable casting for screen-type models/parts
+                child.castShadow = !disableCasting
+            }
+        })
+    }
+
+    /**
+     * Setup physics for a model using cannon-es via PhysicsManager
+     */
+    setupPhysics(root, item) {
+        if (!this.physics || (!item.enableCollision && !item.enablePhysics)) {
+            return null
+        }
+
+        // Build options from item
+        const physicsOptions = {
+            type: item.static ? 'static' : 'dynamic',
+            shape: item.physicsShape || 'box',
+            mass: typeof item.mass === 'number' ? item.mass : 1,
+            friction: typeof item.friction === 'number' ? item.friction : 0.3,
+            restitution: typeof item.restitution === 'number' ? item.restitution : 0.1,
+            linearDamping: typeof item.linearDamping === 'number' ? item.linearDamping : 0.2,
+            angularDamping: typeof item.angularDamping === 'number' ? item.angularDamping : 0.4
+        }
+
+        const body = this.physics.addBodyForMesh(root, physicsOptions)
+
+        const data = {
+            enabled: true,
+            physics: true,
+            body,
+            interactionCallback: item.interactionCallback || null,
+            lastInteractionTime: 0
+        }
+
+        // Attach to userData
+        root.userData.physics = data
+        return data
+    }
+
+    /**
+     * Check collision between character position and all collision-enabled models
+     */
+    checkCollisions(characterPosition, proposedPosition) {
+        const result = {
+            collision: false,
+            correctedPosition: proposedPosition.clone(),
+            interactions: []
+        }
+
+        for (const modelEntry of this.models) {
+            if (!modelEntry.physics || !modelEntry.physics.enabled) {
+                continue
+            }
+
+            const physics = modelEntry.physics
+            const distance = proposedPosition.distanceTo(modelEntry.mesh.position)
+
+            // Simple sphere collision for now
+            const collisionRadius = 2.0
+            if (distance < collisionRadius) {
+                result.collision = true
+
+                // Simple collision response - push character away
+                const pushDirection = proposedPosition.clone().sub(modelEntry.mesh.position).normalize()
+                result.correctedPosition = modelEntry.mesh.position.clone().add(pushDirection.multiplyScalar(collisionRadius))
+
+                // Handle interaction
+                if (physics.interactionCallback) {
+                    const currentTime = Date.now()
+                    if (currentTime - physics.lastInteractionTime > 1000) { // 1 second cooldown
+                        result.interactions.push({
+                            model: modelEntry.mesh,
+                            item: modelEntry.item,
+                            callback: physics.interactionCallback
+                        })
+                        physics.lastInteractionTime = currentTime
+                    }
+                }
+
+                // Handle signpost-specific interactions
+                if (modelEntry.item.type === 'signpost') {
+                    this.handleSignpostInteraction(modelEntry.item)
+                }
+
+                break // Only handle first collision
+            }
+        }
+
+        return result
+    }
+
+    /**
+     * Update physics for all physics-enabled models (called each frame)
+     */
+    updatePhysics(deltaTime) {
+        for (const modelEntry of this.models) {
+            if (modelEntry.physics && modelEntry.physics.physics) {
+                // Add any physics updates here (e.g., animations, floating effects)
+            }
+        }
+    }
+
+    /**
+     * Create interaction callback for text models
+     */
+    createTextInteractionCallback() {
+        return (character, model, item) => {
+            console.log(`Character touched the text model: ${item.modelPath}`)
+
+            // Example: Make the text glow briefly
+            model.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    const originalEmissive = child.material.emissive.clone()
+                    child.material.emissive.setHex(0x444444)
+
+                    setTimeout(() => {
+                        child.material.emissive.copy(originalEmissive)
+                    }, 500)
+                }
+            })
+        }
+    }
+
+    /**
+     * Handle signpost interaction (open URL)
+     */
+    handleSignpostInteraction(item) {
+        if (item.type === 'signpost' && item.url) {
+            console.log(`Opening signpost URL: ${item.name} -> ${item.url}`)
+            window.open(item.url, '_blank')
+        }
+    }
+
+    /**
+     * Get all models of a specific type
+     */
+    getModelsByType(type) {
+        return this.models.filter(modelEntry => modelEntry.item.type === type)
+    }
+
+    /**
+     * Get model by index
+     */
+    getModel(index) {
+        return this.models[index] || null
+    }
+
+    /**
+     * Get total number of models
+     */
+    getModelCount() {
+        return this.models.length
+    }
+
+    /**
+     * Dispose of all resources
+     */
+    dispose() {
+        this.models.forEach(modelEntry => {
+            this.scene.remove(modelEntry.mesh)
+
+            // Dispose of geometries and materials
+            modelEntry.mesh.traverse((child) => {
+                if (child.geometry) child.geometry.dispose()
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(material => material.dispose())
+                    } else {
+                        child.material.dispose()
+                    }
+                }
+            })
+        })
+
+        this.models = []
+        console.log('ModelManager disposed')
+    }
+}

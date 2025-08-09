@@ -40,7 +40,7 @@ export class PhysicsManager {
     createBoxShapeFromObject(object3d) {
         const box = new THREE.Box3().setFromObject(object3d)
         const size = box.getSize(new THREE.Vector3())
-        const halfExtents = new CANNON.Vec3(size.x / 2, size.y/2 , size.z / 2)
+        const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2)
         const shape = new CANNON.Box(halfExtents)
         const center = box.getCenter(new THREE.Vector3())
         return { shape, center }
@@ -55,46 +55,68 @@ export class PhysicsManager {
         return { shape, center }
     }
 
+    // src/physics/PhysicsManager.js
+
     addBodyForMesh(mesh, options = {}) {
         const {
-            type = 'dynamic', // 'static' | 'dynamic'
-            shape = 'box',    // 'box' | 'sphere'
+            type = 'dynamic',
+            shape = 'box',
             mass = 1,
             friction = 0.3,
             restitution = 0.1,
             linearDamping = 0.2,
             angularDamping = 0.4
         } = options
-        const builder = shape === 'sphere' ? this.createSphereShapeFromObject(mesh) : this.createBoxShapeFromObject(mesh)
-        const { shape: cannonShape, center } = builder
 
-        const material = this.createMaterial(friction, restitution)
+        // 1. モデルの現在の回転を一時的に保存
+        const initialQuaternion = mesh.quaternion.clone();
+
+        // 2. 回転をリセットして、モデル本来の形の当たり判定を計算
+        mesh.quaternion.set(0, 0, 0, 1);
+        mesh.updateWorldMatrix(true, true); // 行列を更新
+
+        const box = new THREE.Box3().setFromObject(mesh);
+        const size = box.getSize(new THREE.Vector3());
+        const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
+
+        // 3. モデルの回転を元に戻す
+        mesh.quaternion.copy(initialQuaternion);
+        mesh.updateWorldMatrix(true, true);
+
+        // 4. 'shape'オプションに応じて、正しい当たり判定の形状を作成
+        let cannonShape;
+        if (shape === 'sphere') {
+            const radius = Math.max(size.x, size.y, size.z) / 2;
+            cannonShape = new CANNON.Sphere(radius);
+        } else { // default to 'box'
+            const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
+            cannonShape = new CANNON.Box(halfExtents);
+        }
+        // ★★★★★ ここまで ★★★★★
+
+        const material = this.createMaterial(friction, restitution);
 
         const body = new CANNON.Body({
             mass: type === 'static' ? 0 : mass,
             material,
             shape: cannonShape
-        })
-        // body.quaternion.copy(mesh.quaternion);
-        // ★★★★★ ここからが最重要 ★★★★★
-        // 物理ボディの中心位置を、見た目の中心位置から、高さの半分だけ下にずらす
-        if (shape === 'box') {
-            const halfHeight = cannonShape.halfExtents.y;
-            body.position.set(center.x, center.y + halfHeight, center.z);
-        } else { // 'sphere'の場合は中心が基点でOK
-            body.position.set(center.x, center.y, center.z)
-        }
-        // ★★★★★ ここまで ★★★★★
+        });
 
-        body.linearDamping = linearDamping
-        body.angularDamping = angularDamping
+        // 4. 見た目の位置と、保存しておいた正しい回転を物理ボディに適用
+        body.position.copy(mesh.position);
+        body.quaternion.copy(mesh.quaternion); // ✅ 回転を直接コピー
 
-        // Add to world and mapsss
-        this.world.addBody(body)
-        this.bodyToMesh.set(body, mesh)
-        this.meshToBody.set(mesh, body)
+        // 基点が中心にあるモデルを前提に、Y位置を補正
+        body.position.y += halfExtents.y;
 
-        return body
+        body.linearDamping = linearDamping;
+        body.angularDamping = angularDamping;
+
+        this.world.addBody(body);
+        this.bodyToMesh.set(body, mesh);
+        this.meshToBody.set(mesh, body);
+
+        return body;
     }
 
     addCharacterBody(position = new THREE.Vector3(0, 1, 0), radius = 0.5, mass = 45) {
