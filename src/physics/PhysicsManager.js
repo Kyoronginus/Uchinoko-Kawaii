@@ -59,7 +59,7 @@ export class PhysicsManager {
         const {
             type = 'dynamic', // 'static' | 'dynamic'
             shape = 'box',    // 'box' | 'sphere'
-            mass = 3,
+            mass = 1,
             friction = 0.3,
             restitution = 0.1,
             linearDamping = 0.2,

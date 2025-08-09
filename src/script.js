@@ -14,7 +14,7 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-scene.fog = new THREE.Fog(0xffffff, 20, 40) // Atmospheric fog for depth
+// scene.fog = new THREE.Fog(0xffffff, 20, 30) // Atmospheric fog for depth
 
 // Sizes
 const sizes = {
@@ -34,6 +34,7 @@ const cameraController = new CameraController(camera, character)
 
 // HD-2D Renderer
 const hd2dRenderer = new HD2DRenderer(canvas, sizes)
+
 
 // Initialize managers
 const physicsManager = new PhysicsManager()

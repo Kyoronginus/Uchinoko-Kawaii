@@ -1,6 +1,11 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { TextManager } from './TextManager.js'
+import { Delaunay } from 'd3-delaunay'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 export class EnvironmentManager {
     constructor(scene) {
@@ -21,6 +26,15 @@ export class EnvironmentManager {
             background: {
                 color: 0xffffff
             },
+            delaunay: {
+                pointCount: 100,
+                lineColor: '#23c8ffff', // Sky blue
+                lineWidth: 0.2,
+                backgroundColor: '#ffffff',
+                opacity: 0.7,
+                size: { width: 100, height: 100 }, // World space size
+                position: { x: 0, y: 20, z: -30 } // Fixed position in world space
+            },
             fallbackFloor: {
                 size: { width: 20, height: 20 },
                 color: 0x8B4513,
@@ -35,6 +49,7 @@ export class EnvironmentManager {
      */
     async setupEnvironment() {
         this.setBackgroundColor()
+        // this.createDelaunaySky()
         await this.loadFloor()
 
         console.log('Environment setup complete')
@@ -47,6 +62,91 @@ export class EnvironmentManager {
         this.scene.background = new THREE.Color(this.config.background.color)
         console.log('Background color set')
     }
+
+    /**
+     * Create delaunay triangulation as a fixed world object (not following camera)
+     */
+    createDelaunaySky() {
+        const config = this.config.delaunay
+        const canvasSize = 2048 // Fixed canvas resolution for better quality
+
+        // Generate random points within the canvas
+        const points = Array.from({ length: config.pointCount }, () => [
+            Math.random() * canvasSize,
+            Math.random() * canvasSize
+        ])
+
+        const delaunay = Delaunay.from(points)
+
+        // Create canvas for the triangulation
+        const canvas = document.createElement('canvas')
+        canvas.width = canvasSize
+        canvas.height = canvasSize
+        const context = canvas.getContext('2d')
+
+        // Set background
+        context.fillStyle = config.backgroundColor
+        context.fillRect(0, 0, canvasSize, canvasSize)
+
+        // Set line style (fix the typo and use config)
+        context.strokeStyle = config.lineColor
+        context.lineWidth = config.lineWidth
+
+        // Draw triangles (fix the iteration - should be i += 3, not i += 9)
+        for (let i = 0; i < delaunay.triangles.length; i += 3) {
+            const p0 = points[delaunay.triangles[i]]
+            const p1 = points[delaunay.triangles[i + 1]]
+            const p2 = points[delaunay.triangles[i + 2]]
+
+            context.beginPath()
+            context.moveTo(p0[0], p0[1])
+            context.lineTo(p1[0], p1[1])
+            context.lineTo(p2[0], p2[1])
+            context.closePath()
+            context.stroke()
+        }
+
+        // Create texture from canvas
+        const texture = new THREE.CanvasTexture(canvas)
+        texture.colorSpace = THREE.SRGBColorSpace
+        texture.needsUpdate = true
+
+        // Create a plane geometry for the background (fixed in world space)
+        const geometry = new THREE.SphereGeometry(
+            config.size.width, // Radius of the dome
+            64, // Width segments
+            32, // Height segments
+            0, // phiStart
+            Math.PI * 2, // phiLength
+            0, // thetaStart
+            // Math.PI / 2 // thetaLength (Math.PI / 2 で上半球になる)
+        );
+        const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            opacity: config.opacity,
+            side: THREE.BackSide
+        })
+
+        const delaunayPlane = new THREE.Mesh(geometry, material)
+
+        // Position the plane in world space (won't follow camera)
+        delaunayPlane.position.set(
+            config.position.x,
+            config.position.y,
+            config.position.z
+        )
+
+        // Make it face the camera initially but stay fixed in world space
+        delaunayPlane.lookAt(0, 0, 0)
+
+        // Add to scene as a world object
+        this.scene.add(delaunayPlane)
+        this.environmentObjects.delaunayBackground = delaunayPlane
+
+        console.log('Delaunay triangulation background created as fixed world object')
+    }
+
 
     /**
      * Load the floor mesh from GLTF file
@@ -287,6 +387,114 @@ export class EnvironmentManager {
                 newConfig.fallbackFloor?.receiveShadow ??
                 this.config.floor.receiveShadow
             )
+        }
+    }
+
+    /**
+     * Update Delaunay background configuration and recreate it
+     * @param {Object} newConfig - New Delaunay configuration
+     */
+    updateDelaunayBackground(newConfig) {
+        // Update configuration
+        this.config.delaunay = { ...this.config.delaunay, ...newConfig }
+
+        // Remove existing Delaunay background
+        const existingDelaunay = this.environmentObjects.delaunayBackground
+        if (existingDelaunay) {
+            this.scene.remove(existingDelaunay)
+            // Dispose of resources
+            existingDelaunay.geometry.dispose()
+            existingDelaunay.material.dispose()
+            if (existingDelaunay.material.map) {
+                existingDelaunay.material.map.dispose()
+            }
+            delete this.environmentObjects.delaunayBackground
+        }
+
+        // Recreate with new configuration
+        this.createDelaunaySky()
+        console.log('Delaunay background updated with new configuration')
+    }
+
+    /**
+     * Set Delaunay background visibility
+     * @param {boolean} visible - Whether the background should be visible
+     */
+    setDelaunayBackgroundVisibility(visible) {
+        const delaunayBg = this.environmentObjects.delaunayBackground
+        if (delaunayBg) {
+            delaunayBg.visible = visible
+        }
+    }
+
+    /**
+     * Set Delaunay background opacity
+     * @param {number} opacity - Opacity value (0-1)
+     */
+    setDelaunayBackgroundOpacity(opacity) {
+        const delaunayBg = this.environmentObjects.delaunayBackground
+        if (delaunayBg && delaunayBg.material) {
+            delaunayBg.material.opacity = Math.max(0, Math.min(1, opacity))
+            this.config.delaunay.opacity = delaunayBg.material.opacity
+        }
+    }
+
+    /**
+     * Move Delaunay background to a new position
+     * @param {Object} position - New position {x, y, z}
+     */
+    moveDelaunayBackground(position) {
+        const delaunayBg = this.environmentObjects.delaunayBackground
+        if (delaunayBg) {
+            delaunayBg.position.set(position.x, position.y, position.z)
+            this.config.delaunay.position = { ...position }
+        }
+    }
+
+    /**
+     * Apply a preset style to the Delaunay background
+     * @param {string} styleName - Name of the preset style
+     */
+    applyDelaunayStyle(styleName) {
+        const styles = {
+            'sky': {
+                lineColor: '#87CEEB',
+                backgroundColor: '#F0F8FF',
+                opacity: 0.3,
+                lineWidth: 1
+            },
+            'sunset': {
+                lineColor: '#FF6B35',
+                backgroundColor: '#FFE5B4',
+                opacity: 0.4,
+                lineWidth: 2
+            },
+            'night': {
+                lineColor: '#4169E1',
+                backgroundColor: '#191970',
+                opacity: 0.5,
+                lineWidth: 1
+            },
+            'minimal': {
+                lineColor: '#D3D3D3',
+                backgroundColor: '#FFFFFF',
+                opacity: 0.2,
+                lineWidth: 1
+            },
+            'vibrant': {
+                lineColor: '#FF1493',
+                backgroundColor: '#00FFFF',
+                opacity: 0.6,
+                lineWidth: 3
+            }
+        }
+
+        const style = styles[styleName]
+        if (style) {
+            this.updateDelaunayBackground(style)
+            console.log(`Applied Delaunay style: ${styleName}`)
+        } else {
+            console.warn(`Unknown Delaunay style: ${styleName}. Available styles:`, Object.keys(styles))
         }
     }
 
