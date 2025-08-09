@@ -13,7 +13,7 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-// scene.fog = new THREE.Fog(0xffffff, 20, 30) // Atmospheric fog for depths
+// scene.fog = new THREE.Fog(0xffffff, 20, 30) // Atmospheric fog for depth
 
 // Sizes
 const sizes = {
@@ -32,7 +32,11 @@ const character = new PixelCharacter('/default_standing.png', scene, camera)
 const cameraController = new CameraController(camera, character)
 
 // HD-2D Renderer
-const hd2dRenderer = new HD2DRenderer(canvas, sizes)
+const hd2dRenderer = new HD2DRenderer(canvas, sizes, scene, camera)
+// Test different DOF settings
+// hd2dRenderer.setAperture(0.05);  // Strong blur effect
+// hd2dRenderer.setMaxBlur(0.02);   // Visible blur amount
+
 
 
 // Initialize managers
@@ -124,9 +128,11 @@ initializeScene()
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
-
+    // Update depth-of-field focus distance based on character position
+    const distance = character.getPosition().distanceTo(camera.position);
+    hd2dRenderer.setFocusDistance(distance);
     // Update character input and visuals (will set desired velocity)
-    const deltaTime = 1/60; // Approximate delta time for 60fps
+    const deltaTime = 1 / 60; // Approximate delta time for 60fps
     character.update()
 
     // Drive the character's physics body from input
