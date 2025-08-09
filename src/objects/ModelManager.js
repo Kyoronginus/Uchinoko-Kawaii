@@ -206,7 +206,7 @@ export class ModelManager {
             },
             {
                 modelPath: '/beveled_cube.glb',
-                position: new THREE.Vector3(-10, 0.1, 14.5),
+                position: new THREE.Vector3(-9, 0.1, 10.5),
                 rotation: new THREE.Euler(0, 7 * Math.PI / 5, 0),
                 scale: new THREE.Vector3(3.6, 3.6, 3.6),
                 type: 'untextured',
@@ -286,6 +286,19 @@ export class ModelManager {
                 enablePhysics: true,
                 physicsShape: 'box',
                 mass: 300,
+                interactionCallback: null, // Will be set during loading
+            },
+            //stones
+            {
+                modelPath: '/Stone_1.glb',
+                position: new THREE.Vector3(4, 0.1, 4),
+                rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(0.5, 0.5, 0.5),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 30,
                 interactionCallback: null, // Will be set during loading
             },
 
