@@ -13,7 +13,7 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-// scene.fog = new THREE.Fog(0xffffff, 20, 30) // Atmospheric fog for depth
+scene.fog = new THREE.Fog(0xffffff, 50, 100) // Atmospheric fog for depth
 
 // Sizes
 const sizes = {
@@ -94,7 +94,7 @@ function setupExampleText() {
     )
 
     // Add directional text
-    environmentManager.addFloorText('← Artworks →',
+    environmentManager.addFloorText('Welcome!',
         { x: 0, z: 5 },
         {
             font: '16px Silkscreen',

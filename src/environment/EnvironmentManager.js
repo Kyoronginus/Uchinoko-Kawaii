@@ -203,7 +203,7 @@ export class EnvironmentManager {
 
         // Set position
         floorMesh.position.set(config.position.x, config.position.y, config.position.z)
-
+        
         // Configure shadows for all child meshes
         floorMesh.traverse((child) => {
             if (child.isMesh) {

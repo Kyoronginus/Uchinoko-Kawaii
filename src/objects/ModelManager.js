@@ -57,7 +57,7 @@ export class ModelManager {
             },
             {
                 modelPath: '/letters_3D/N.glb',
-                position: new THREE.Vector3(1, 0, 4),
+                position: new THREE.Vector3(1.1, 0, 4),
                 rotation: new THREE.Euler(0, 0, 0),
                 scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'untextured',
@@ -70,7 +70,7 @@ export class ModelManager {
             },
             {
                 modelPath: '/letters_3D/A.glb',
-                position: new THREE.Vector3(2, 0, 4),
+                position: new THREE.Vector3(2.3, 0, 4),
                 rotation: new THREE.Euler(0, 0, 0),
                 scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'untextured',
@@ -204,7 +204,7 @@ export class ModelManager {
                 mass: 0.3,
                 interactionCallback: null, // Will be set during loading
             },
-                        {
+            {
                 modelPath: '/beveled_cube.glb',
                 position: new THREE.Vector3(-10, 0.1, 14.5),
                 rotation: new THREE.Euler(0, 7 * Math.PI / 5, 0),
@@ -215,6 +215,18 @@ export class ModelManager {
                 physicsShape: 'box',
                 mass: 3,
                 interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/beveled_cube.glb',
+                position: new THREE.Vector3(-5, 0.11, 6),
+                rotation: new THREE.Euler(0, 7 * Math.PI / 5, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 3,
+                interactionCallback: null, // Will be set during sloading
             },
             //foundation_acrylic_stand
             {
@@ -245,7 +257,7 @@ export class ModelManager {
             {
                 modelPath: '/Tree.glb',
                 position: new THREE.Vector3(5, 0.1, 3),
-                rotation: new THREE.Euler(0, 1 * Math.PI/2, 0),
+                rotation: new THREE.Euler(0, 1 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(1, 1, 1),
                 type: 'untextured',
                 enableCollision: true,
@@ -257,17 +269,17 @@ export class ModelManager {
             {
                 modelPath: '/Tree.glb',
                 position: new THREE.Vector3(4, 0.1, -1),
-                rotation: new THREE.Euler(0, 2 * Math.PI/2, 0),
+                rotation: new THREE.Euler(0, 2 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(0.90, 0.90, 0.90),
                 type: 'untextured',
                 enableCollision: true,
                 enablePhysics: true,
-                mass:300
+                mass: 300
             },
             {
                 modelPath: '/Tree.glb',
                 position: new THREE.Vector3(-4, 0.1, 0),
-                rotation: new THREE.Euler(0, 3 * Math.PI/2, 0),
+                rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(0.90, 0.90, 0.90),
                 type: 'untextured',
                 enableCollision: true,
