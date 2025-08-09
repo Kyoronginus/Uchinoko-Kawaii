@@ -13,7 +13,7 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-// scene.fog = new THREE.Fog(0xffffff, 20, 30) // Atmospheric fog for depth
+// scene.fog = new THREE.Fog(0xffffff, 20, 30) // Atmospheric fog for depths
 
 // Sizes
 const sizes = {
@@ -102,7 +102,7 @@ function setupExampleText() {
     )
 
     // Add instructions
-    environmentManager.addFloorText('Use      to move around',
+    environmentManager.addFloorText('Use        to move around',
         { x: 0, z: 12 },
         {
             font: '14px Silkscreen',

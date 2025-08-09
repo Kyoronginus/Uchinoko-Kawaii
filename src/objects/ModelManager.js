@@ -145,8 +145,8 @@ export class ModelManager {
             },
             {
                 modelPath: '/letters_3D/A.glb',
-                position: new THREE.Vector3(-4.7, 0, 12.5),
-                rotation: new THREE.Euler(3/2 * Math.PI, 0, 0),
+                position: new THREE.Vector3(-4.7, 1, 12.5),
+                rotation: new THREE.Euler(3 / 2 * Math.PI, 0, 0),
                 scale: new THREE.Vector3(1.3, 1.3, 1.3),
                 type: 'untextured',
                 enableCollision: true,
@@ -177,6 +177,44 @@ export class ModelManager {
                 enablePhysics: true,
                 physicsShape: 'sphere',
                 mass: 0.3,
+                interactionCallback: null, // Will be set during loading
+            },
+            //beveled_cube
+            {
+                modelPath: '/beveled_cube.glb',
+                position: new THREE.Vector3(9, 0, 12.5),
+                rotation: new THREE.Euler(0, 3 * Math.PI / 5, 0),
+                scale: new THREE.Vector3(4, 4, 4),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 0.3,
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/beveled_cube.glb',
+                position: new THREE.Vector3(9, 5, 12.5),
+                rotation: new THREE.Euler(0, 7 * Math.PI / 5, 0),
+                scale: new THREE.Vector3(4, 4, 4),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 0.3,
+                interactionCallback: null, // Will be set during loading
+            },
+            //foundation_acrylic_stand
+            {
+                modelPath: '/foundation_acrylic_stand.glb',
+                position: new THREE.Vector3(0, 1, -12.5),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(3, 3, 3),
+                type: 'acrylic',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 300,
                 interactionCallback: null, // Will be set during loading
             },
         ]
@@ -215,6 +253,8 @@ export class ModelManager {
                         this.applyBasicMaterials(root, item)
                     } else if (item.type === 'signpost') {
                         await this.applySignpostMaterials(root, item)
+                    } else if (item.type === 'acrylic') {
+                        this.applyAcrylicMaterials(root, item)
                     }
 
                     // Configure shadows
@@ -304,6 +344,54 @@ export class ModelManager {
         }
     }
 
+    /**
+     * Applies the character texture to the acrylic stand model and configures its
+     * material for sharp, cutout transparency.
+     * @param {THREE.Object3D} root - The root of the loaded GLTF scene.
+     * @param {object} item - The configuration object containing the screenshotPath.
+     */
+    async applyAcrylicMaterials(root, item) {
+        // Exit if there's no texture path defined
+        if (!item.screenshotPath) return;
+
+        try {
+            // Load the texture from the provided path
+            const texture = await this.loadTexture(item.screenshotPath);
+
+            // Apply standard texture configurations (flipping, encoding, etc.)
+            this.configureTexture(texture);
+
+            // Traverse the model to find the mesh and its material
+            root.traverse((child) => {
+                if (child.isMesh) {
+                    // Get the material from the mesh
+                    const material = child.material;
+
+                    // --- This is the key part for acrylic stands ---
+
+                    // 1. Apply the loaded texture to the material's color map
+                    material.map = texture;
+
+                    // 2. Enable transparency
+                    // This tells Three.js to respect the alpha channel.
+                    material.transparent = true;
+
+                    // 3. Set an alpha test threshold for clean cutouts
+                    // This will make any pixel with an alpha value below 0.5 completely invisible.
+                    // It's perfect for sharp-edged transparency like character cutouts
+                    // and avoids transparency sorting issues.
+                    // material.alphaTest = 0.5;
+
+                    // 4. Let Three.js know the material needs to be updated
+                    material.needsUpdate = true;
+                }
+            });
+
+        } catch (error) {
+            console.error(`Failed to apply acrylic material for: ${item.screenshotPath}`, error);
+        }
+    }
+    
     /**
      * Load texture as Promise
      */
