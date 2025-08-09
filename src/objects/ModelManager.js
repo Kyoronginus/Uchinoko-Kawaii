@@ -193,15 +193,27 @@ export class ModelManager {
                 interactionCallback: null, // Will be set during loading
             },
             {
-                modelPath: '/beveled_cube.glb',
-                position: new THREE.Vector3(9, 5, 12.5),
+                modelPath: '/beveled_cube_yellow.glb',
+                position: new THREE.Vector3(8.8, 5, 12.5),
                 rotation: new THREE.Euler(0, 7 * Math.PI / 5, 0),
-                scale: new THREE.Vector3(4, 4, 4),
+                scale: new THREE.Vector3(3.6, 3.6, 3.6),
                 type: 'untextured',
                 enableCollision: true,
                 enablePhysics: true,
                 physicsShape: 'box',
                 mass: 0.3,
+                interactionCallback: null, // Will be set during loading
+            },
+                        {
+                modelPath: '/beveled_cube.glb',
+                position: new THREE.Vector3(-10, 0.1, 14.5),
+                rotation: new THREE.Euler(0, 7 * Math.PI / 5, 0),
+                scale: new THREE.Vector3(3.6, 3.6, 3.6),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 3,
                 interactionCallback: null, // Will be set during loading
             },
             //foundation_acrylic_stand
@@ -217,6 +229,54 @@ export class ModelManager {
                 mass: 300,
                 interactionCallback: null, // Will be set during loading
             },
+            // trees
+            {
+                modelPath: '/Tree.glb',
+                position: new THREE.Vector3(-5, 0.1, 3),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 300,
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/Tree.glb',
+                position: new THREE.Vector3(5, 0.1, 3),
+                rotation: new THREE.Euler(0, 1 * Math.PI/2, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 300,
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/Tree.glb',
+                position: new THREE.Vector3(4, 0.1, -1),
+                rotation: new THREE.Euler(0, 2 * Math.PI/2, 0),
+                scale: new THREE.Vector3(0.90, 0.90, 0.90),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                mass:300
+            },
+            {
+                modelPath: '/Tree.glb',
+                position: new THREE.Vector3(-4, 0.1, 0),
+                rotation: new THREE.Euler(0, 3 * Math.PI/2, 0),
+                scale: new THREE.Vector3(0.90, 0.90, 0.90),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 300,
+                interactionCallback: null, // Will be set during loading
+            },
+
         ]
     }
 
@@ -305,30 +365,26 @@ export class ModelManager {
      * Apply basic materials for untextured models
      */
     applyBasicMaterials(root, item) {
-        const color = (item && typeof item.color !== 'undefined') ? item.color : 0xffffff
+        // Untexturedモデルの場合、Blenderで設定したマテリアルをそのまま活かします。
+        // ここでは、そのマテリアルが正しく光に反応するようにプロパティを調整するだけです。
 
         root.traverse((child) => {
-            if (child.isMesh) {
-                // Mark screen-like parts before disposing original materials
-                const hadScreenMaterial = !!(child.material && typeof child.material.name === 'string' && /m[_ ]?screen/i.test(child.material.name))
-                const hadScreenName = !!(child.name && /m[_ ]?screen/i.test(child.name))
-                if (hadScreenMaterial || hadScreenName) {
-                    child.userData.isScreenPart = true
-                }
+            if (child.isMesh && child.material) {
+                // Blenderから来たマテリアルが配列の場合も考慮
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
 
-                // Dispose old materials to prevent leaks
-                if (child.material) {
-                    if (Array.isArray(child.material)) {
-                        child.material.forEach(m => m.dispose && m.dispose())
-                    } else {
-                        child.material.dispose && child.material.dispose()
+                materials.forEach(material => {
+                    // もしマテリアルに色設定があれば、それを尊重する
+                    // なければ、デフォルト色を設定
+                    if (!material.color) {
+                        material.color = new THREE.Color(0xffffff);
                     }
-                }
-                child.material = new THREE.MeshLambertMaterial({ color })
+                    // その他のプロパティも必要に応じて調整可能
+                    // material.roughness = 0.8; 
+                });
             }
-        })
+        });
     }
-
     /**
      * Apply signpost materials (with screenshot texture)
      */
@@ -391,7 +447,7 @@ export class ModelManager {
             console.error(`Failed to apply acrylic material for: ${item.screenshotPath}`, error);
         }
     }
-    
+
     /**
      * Load texture as Promise
      */

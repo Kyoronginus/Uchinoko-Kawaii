@@ -52,6 +52,8 @@ export class EnvironmentManager {
         // this.createDelaunaySky()
         await this.loadFloor()
 
+        
+
         console.log('Environment setup complete')
     }
 

@@ -25,7 +25,7 @@ export class HD2DRenderer {
 
         // HD-2D specific settings
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping
-        this.renderer.toneMappingExposure = 1.2
+        this.renderer.toneMappingExposure = 1.0
 
         // Create render targets for post-processing
         this.setupRenderTargets()
@@ -74,7 +74,7 @@ export class HD2DRenderer {
         // 3. 被写界深度（Bokeh）パスを追加
         this.bokehPass = new BokehPass(scene, camera, {
             focus: 12.0,        // Initial focus distance
-            aperture: 0.005,   // Aperture size (larger = more blur)
+            aperture: 0.0020,   // Aperture size (larger = more blur)
             maxblur: 0.004,    // Maximum blur amount (increased for more visible effect)
             width: this.sizes.width,
             height: this.sizes.height

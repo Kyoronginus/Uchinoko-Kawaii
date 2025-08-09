@@ -13,7 +13,7 @@ export class LightingManager {
             },
             directional: {
                 color: 0xffffff,
-                intensity: 2.5,
+                intensity: 3.5,
                 position: { x: 20, y: 10, z: 10 },
                 castShadow: true,
                 shadow: {
@@ -21,13 +21,13 @@ export class LightingManager {
                     camera: {
                         near: 0.1,
                         far: 100,
-                        left: -20,
-                        right: 20,
-                        top: 20,
-                        bottom: -20
+                        left: -50,
+                        right: 50,
+                        top: 50,
+                        bottom: -50
                     },
-                    bias: -0.005, // Reduced bias for sharper shadows
-                    normalBias: 0.01 // Reduced normal bias
+                    bias: -0.010, // Reduced bias for sharper shadows
+                    normalBias: 0.001 // Reduced normal bias
                 }
             }
         }
