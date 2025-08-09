@@ -5,7 +5,7 @@ export class PixelCharacter {
         this.scene = scene
         this.camera = camera
         this.position = new THREE.Vector3(0, 0.9, 8) // キャラクターの基準Y位置a
-        this.moveSpeed = 20
+        this.moveSpeed = 2
         this.isMoving = false
         this.direction = 'down'
         this.collisionManager = null // Will be set by external code

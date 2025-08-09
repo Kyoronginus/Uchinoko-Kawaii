@@ -56,6 +56,27 @@ export class UntexturedModelManager {
                 enablePhysics: true,
                 interactionCallback: this.createTextInteractionCallback(),
             },
+            //wasd
+            {
+                modelPath: '/letters_3D/W.glb',
+                position: new THREE.Vector3(-3.7, 0, 11.5),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1.5, 1.5, 1.5),
+                type: 'generic',
+                enableCollision: true,
+                enablePhysics: true,
+                interactionCallback: this.createTextInteractionCallback(),
+            },
+            {
+                modelPath: '/letters_3D/A.glb',
+                position: new THREE.Vector3(-3.7, 0, 12),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1.5, 1.5, 1.5),
+                type: 'generic',
+                enableCollision: true,
+                enablePhysics: true,
+                interactionCallback: this.createTextInteractionCallback(),
+            },
             {
                 modelPath: '/letters_3D/A.glb',
                 position: new THREE.Vector3(2, 0, 9),

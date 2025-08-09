@@ -3,7 +3,7 @@ import * as CANNON from 'cannon-es'
 
 export class PhysicsManager {
     constructor() {
-        this.world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) })
+        this.world = new CANNON.World({ gravity: new CANNON.Vec3(0, -3.82, 0) })
         this.world.broadphase = new CANNON.SAPBroadphase(this.world)
         this.world.allowSleep = true
 
@@ -75,7 +75,7 @@ export class PhysicsManager {
             material,
             shape: cannonShape
         })
-
+        // body.quaternion.copy(mesh.quaternion);
         // ★★★★★ ここからが最重要 ★★★★★
         // 物理ボディの中心位置を、見た目の中心位置から、高さの半分だけ下にずらす
         if (shape === 'box') {
@@ -97,7 +97,7 @@ export class PhysicsManager {
         return body
     }
 
-    addCharacterBody(position = new THREE.Vector3(0, 1, 0), radius = 0.5, mass = 1) {
+    addCharacterBody(position = new THREE.Vector3(0, 1, 0), radius = 0.5, mass = 45) {
         const shape = new CANNON.Sphere(radius)
         const material = this.createMaterial(0.4, 0.0)
         const body = new CANNON.Body({ mass, shape, material })
