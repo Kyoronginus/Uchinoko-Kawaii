@@ -102,7 +102,7 @@ function setupExampleText() {
     )
 
     // Add instructions
-    environmentManager.addFloorText('Use WASD to move around',
+    environmentManager.addFloorText('Use      to move around',
         { x: 0, z: 12 },
         {
             font: '14px Silkscreen',

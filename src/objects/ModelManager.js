@@ -18,7 +18,7 @@ export class ModelManager {
             // Untextured models (letters/text) - low mass, movable
             {
                 modelPath: '/letters_3D/V.glb',
-                position: new THREE.Vector3(-2, 0, 9),
+                position: new THREE.Vector3(-2, 0, 4),
                 rotation: new THREE.Euler(0, 0, 0),
                 scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'untextured',
@@ -31,7 +31,7 @@ export class ModelManager {
             },
             {
                 modelPath: '/letters_3D/E.glb',
-                position: new THREE.Vector3(-1, 0, 9),
+                position: new THREE.Vector3(-1, 0, 4),
                 rotation: new THREE.Euler(0, 0, 0),
                 scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'untextured',
@@ -44,7 +44,7 @@ export class ModelManager {
             },
             {
                 modelPath: '/letters_3D/N.glb',
-                position: new THREE.Vector3(0, 0, 9),
+                position: new THREE.Vector3(0, 0, 4),
                 rotation: new THREE.Euler(0, 0, 0),
                 scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'untextured',
@@ -57,7 +57,7 @@ export class ModelManager {
             },
             {
                 modelPath: '/letters_3D/N.glb',
-                position: new THREE.Vector3(1, 0, 9),
+                position: new THREE.Vector3(1, 0, 4),
                 rotation: new THREE.Euler(0, 0, 0),
                 scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'untextured',
@@ -70,7 +70,7 @@ export class ModelManager {
             },
             {
                 modelPath: '/letters_3D/A.glb',
-                position: new THREE.Vector3(2, 0, 9),
+                position: new THREE.Vector3(2, 0, 4),
                 rotation: new THREE.Euler(0, 0, 0),
                 scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'untextured',
@@ -83,7 +83,7 @@ export class ModelManager {
             },
             {
                 modelPath: '/letters_3D/VENNA_TEXT.glb',
-                position: new THREE.Vector3(0, 0, -4),
+                position: new THREE.Vector3(0, 7, -4),
                 rotation: new THREE.Euler(0, 0, 0),
                 scale: new THREE.Vector3(4, 4, 4),
                 type: 'untextured',
@@ -129,7 +129,56 @@ export class ModelManager {
                 zoneDepth: 4,
                 url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
                 name: 'Visit Fibonacci Detection'
-            }
+            },
+            // WASD
+            {
+                modelPath: '/letters_3D/W.glb',
+                position: new THREE.Vector3(-3.7, 0, 11.5),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1.3, 1.3, 1.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'sphere',
+                mass: 0.3,
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/letters_3D/A.glb',
+                position: new THREE.Vector3(-4.7, 0, 12.5),
+                rotation: new THREE.Euler(3/2 * Math.PI, 0, 0),
+                scale: new THREE.Vector3(1.3, 1.3, 1.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'sphere',
+                mass: 0.3,
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/letters_3D/S.glb',
+                position: new THREE.Vector3(-3.7, 0, 12.5),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1.3, 1.3, 1.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'sphere',
+                mass: 0.3,
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/letters_3D/D.glb',
+                position: new THREE.Vector3(-2.7, 0, 12.5),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1.3, 1.3, 1.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'sphere',
+                mass: 0.3,
+                interactionCallback: null, // Will be set during loading
+            },
         ]
     }
 
