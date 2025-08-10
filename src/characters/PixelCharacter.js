@@ -5,7 +5,8 @@ export class PixelCharacter {
         this.scene = scene
         this.camera = camera
         this.position = new THREE.Vector3(0, 0.9, 8) // キャラクターの基準Y位置a
-        this.moveSpeed = 2
+        this.initialPosition = new THREE.Vector3(0, 1, 8);
+        this.moveSpeed = 5
         this.isMoving = false
         this.direction = 'down'
         this.collisionManager = null // Will be set by external code
@@ -145,6 +146,9 @@ export class PixelCharacter {
                     this.direction = 'right'
                     break
             }
+            if (event.code === 'KeyR') {
+                this.resetPosition();
+            }
         })
 
         document.addEventListener('keyup', (event) => {
@@ -163,6 +167,28 @@ export class PixelCharacter {
                     break
             }
         })
+    }
+
+    // ✅ resetPositionメソッドをクラスに追加
+    /**
+     * Resets the character to its initial position and stops all movement.
+     */
+    resetPosition() {
+        if (this.physicsBody) {
+            // 物理ボディの位置を初期位置に設定
+            this.physicsBody.position.copy(this.initialPosition);
+
+            // 慣性による動きを止めるために、速度を0にする
+            this.physicsBody.velocity.set(0, 0, 0);
+            this.physicsBody.angularVelocity.set(0, 0, 0);
+            this.physicsBody.force.set(0, 0, 0);
+            this.physicsBody.wakeUp();
+
+            console.log('Character position reset.');
+        }
+
+        // アニメーションも待機状態に戻す
+        // this.resetToStanding();
     }
 
     update() {
@@ -247,10 +273,9 @@ export class PixelCharacter {
         })
     }
 
-    // Replace your loadWalkFrames method with this
     loadWalkFrames() {
         const textureLoader = new THREE.TextureLoader();
-        const directions = ['down', 'up', 'left', 'right']; // Add 'up' when you have it
+        const directions = ['down', 'up', 'left', 'right'];
 
         const frameFiles = {
             down: [
@@ -258,12 +283,10 @@ export class PixelCharacter {
                 '/front_walking/front_walking_1.png',
                 '/front_walking/front_walking_2.png'
             ],
-            // For now, up will use the same sprites as down
             up: [
                 '/up_walking/default_standing.png',
                 '/up_walking/up_walking_1.png',
                 '/up_walking/up_walking_2.png'
-
             ],
             left: [
                 '/left_walking/standing_left.png',

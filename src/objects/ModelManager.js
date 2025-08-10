@@ -205,7 +205,7 @@ export class ModelManager {
                 interactionCallback: null, // Will be set during loading
             },
             {
-                modelPath: '/beveled_cube.glb',
+                modelPath: '/beveled_cube_pink.glb',
                 position: new THREE.Vector3(-9, 0.1, 10.5),
                 rotation: new THREE.Euler(0, 7 * Math.PI / 5, 0),
                 scale: new THREE.Vector3(3.6, 3.6, 3.6),
@@ -301,7 +301,76 @@ export class ModelManager {
                 mass: 30,
                 interactionCallback: null, // Will be set during loading
             },
-
+            {
+                modelPath: '/Stone_2.glb',
+                position: new THREE.Vector3(4.3, 0.1, 5),
+                rotation: new THREE.Euler(0, 7 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(0.3, 0.3, 0.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 30,
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/Stone_2.glb',
+                position: new THREE.Vector3(-4.3, 0.1, 4),
+                rotation: new THREE.Euler(0, 9 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(0.3, 0.3, 0.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 30,
+                interactionCallback: null, // Will be set during loading
+            },
+            //tiles
+            {
+                modelPath: '/Tile.glb',
+                position: new THREE.Vector3(0.1, 0.1, 2),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
+            {
+                modelPath: '/Tile.glb',
+                position: new THREE.Vector3(-0.3, 0.1, 0),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
+            {
+                modelPath: '/Tile.glb',
+                position: new THREE.Vector3(0.3, 0.1, -2),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
+            {
+                modelPath: '/Tile_cracked_1.glb',
+                position: new THREE.Vector3(-0.1, 0.1, -4),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
+            {
+                modelPath: '/Tile.glb',
+                position: new THREE.Vector3(0.4, 0.1, -6),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
         ]
     }
 

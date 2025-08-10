@@ -3,7 +3,7 @@ import * as CANNON from 'cannon-es'
 
 export class PhysicsManager {
     constructor() {
-        this.world = new CANNON.World({ gravity: new CANNON.Vec3(0, -3.82, 0) })
+        this.world = new CANNON.World({ gravity: new CANNON.Vec3(0, -6.82, 0) })
         this.world.broadphase = new CANNON.SAPBroadphase(this.world)
         this.world.allowSleep = true
 
