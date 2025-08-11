@@ -371,6 +371,41 @@ export class ModelManager {
                 physicsShape: 'box',
                 mass: 30
             },
+            //Panel_gallery
+            {
+                modelPath: '/Panel_gallery.glb',
+                position: new THREE.Vector3(3, 3, -7),
+                rotation: new THREE.Euler(0, 0.8 / 2 * Math.PI, 0.8 / 2 * Math.PI),
+                scale: new THREE.Vector3(1.2, 1.2, 1.2),
+                type: 'untextured',
+                physicsShape: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30
+            },
+            {
+                modelPath: '/Panel_creator.glb',
+                position: new THREE.Vector3(-3, 3, -7),
+                rotation: new THREE.Euler(0, -0.8 / 2 * Math.PI, -0.8 / 2 * Math.PI),
+                scale: new THREE.Vector3(1.2, 1.2, 1.2),
+                type: 'untextured',
+                physicsShape: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30
+            },
+            //directions
+            {
+                modelPath: '/left.glb',
+                position: new THREE.Vector3(-3, 4, -6),
+                rotation: new THREE.Euler(0, -0.9 / 2 * Math.PI, -0.8 / 2 * Math.PI),
+                scale: new THREE.Vector3(1.8, 1.8, 1.8),
+                type: 'untextured',
+                physicsShape: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 59
+            }
         ]
     }
 
