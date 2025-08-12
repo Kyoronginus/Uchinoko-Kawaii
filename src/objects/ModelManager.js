@@ -487,7 +487,7 @@ export class ModelManager {
                 rotation: new THREE.Euler(0, 3 / 2 * Math.PI, 0),
                 scale: new THREE.Vector3(3, 3, 3),
                 type: 'screen',
-                screenshotPath: '/project_ss/oc_2.png',
+                screenshotPath: '/venna_art/Illustration15.png',
                 enableCollision: true,
                 enablePhysics: true,
                 mass: 300,
@@ -639,8 +639,22 @@ export class ModelManager {
 
         try {
             const texture = await this.loadTexture(item.screenshotPath)
-            this.configureTexture(texture)
-            this.applyTextureToScreen(root, texture)
+
+            texture.magFilter = THREE.NearestFilter
+            texture.minFilter = THREE.NearestFilter
+            texture.wrapS = THREE.RepeatWrapping; // 水平方向の繰り返しを有効に
+            // texture.repeat.x = -1;
+            texture.wrapT = THREE.ClampToEdgeWrapping // 繰り返しを無効に
+
+            root.traverse((child) => {
+                const substring = 'M_Screen'
+                if (child.isMesh && child.material && child.material.name.includes(substring)) {
+                    child.material = new THREE.MeshBasicMaterial({ map: texture });
+                    // テクスチャの上下反転を修正
+                    texture.flipY = false;
+                    texture.needsUpdate = true; // テクスチャの更新をThree.jsに通知
+                }
+            });
         } catch (error) {
             console.error(`Failed to load screenshot for signpost: ${item.screenshotPath}`, error)
         }
@@ -724,7 +738,7 @@ export class ModelManager {
             if (child.isMesh && child.material && child.material.name === 'M_Screen') {
                 child.material = new THREE.MeshBasicMaterial({ map: texture });
                 // テクスチャの上下反転を修正
-                // texture.flipY = false;
+                texture.flipY = false;
                 texture.needsUpdate = true; // テクスチャの更新をThree.jsに通知
             }
         });
