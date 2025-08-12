@@ -325,7 +325,7 @@ export class ModelManager {
                 mass: 30,
                 interactionCallback: null, // Will be set during loading
             },
-            //tiles
+            //tiles_mainpath
             {
                 modelPath: '/Tile.glb',
                 position: new THREE.Vector3(0.1, 0.1, 2),
@@ -371,6 +371,78 @@ export class ModelManager {
                 physicsShape: 'box',
                 mass: 30
             },
+            //tiles_gallery
+            {
+                modelPath: '/Tile.glb',
+                position: new THREE.Vector3(8, 0.1, -13),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
+            {
+                modelPath: '/Tile.glb',
+                position: new THREE.Vector3(10, 0.1, -13.5),
+                rotation: new THREE.Euler(0, 0.1, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
+            {
+                modelPath: '/Tile.glb',
+                position: new THREE.Vector3(12, 0.1, -12.7),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
+            {
+                modelPath: '/Tile_cracked_1.glb',
+                position: new THREE.Vector3(14, 0.1, -13.1),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
+            {
+                modelPath: '/Tile_cracked_1.glb',
+                position: new THREE.Vector3(16, 0.1, -13.1),
+                rotation: new THREE.Euler(0, 0.91 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(0.7, 0.7, 0.7),
+                type: 'untextured',
+                physicsShape: 'box',
+                mass: 30
+            },
+            //Stones_gallery
+            {
+                modelPath: '/Stone_2.glb',
+                position: new THREE.Vector3(16, 0.1, -14.3),
+                rotation: new THREE.Euler(0, 9 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(0.3, 0.3, 0.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 30,
+                interactionCallback: null, // Will be set during loading
+            },
+            {
+                modelPath: '/Stone_1.glb',
+                position: new THREE.Vector3(7, 0.1, -14.3),
+                rotation: new THREE.Euler(0, 9 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(0.3, 0.3, 0.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'box',
+                mass: 30,
+                interactionCallback: null, // Will be set during loading
+            },
+
             //Panel_gallery
             {
                 modelPath: '/Panel_gallery.glb',
@@ -406,19 +478,37 @@ export class ModelManager {
                 enablePhysics: true,
                 mass: 59
             }
-        ]
+        ];
+
+        this.gallery_items = [
+            {
+                modelPath: 'Wireframe_Display.glb',
+                position: new THREE.Vector3(20, -0.3, -15),
+                rotation: new THREE.Euler(0, 3 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(3, 3, 3),
+                type: 'screen',
+                screenshotPath: '/project_ss/oc_2.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 300,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null, // Will be set during loading
+            },
+        ];
     }
 
     /**
      * Initialize and load all models
      */
     async loadAllModels() {
-        const loadPromises = this.items.map(item => this.loadModel(item))
+        const allItems = [...this.items, ...this.gallery_items];
+        const loadPromises = allItems.map(item => this.loadModel(item));
         try {
-            await Promise.all(loadPromises)
-            console.log(`Successfully loaded ${this.models.length} models`)
+            await Promise.all(loadPromises);
+            console.log(`Successfully loaded ${this.models.length} models`);
         } catch (error) {
-            console.error('Error loading models:', error)
+            console.error('Error loading models:', error);
         }
     }
 
@@ -434,6 +524,19 @@ export class ModelManager {
                 async (gltf) => {
                     const root = gltf.scene
 
+                    const objectsToRemove = [];
+                    root.traverse((child) => {
+                        // The 'visible' property is set to false if render visibility was off in Blender
+                        if (!child.visible) {
+                            objectsToRemove.push(child);
+                        }
+                    });
+
+                    // Remove the collected objects from the scene
+                    objectsToRemove.forEach((child) => {
+                        child.removeFromParent();
+                    });
+
                     // Apply transform
                     this.applyTransformation(root, item)
 
@@ -444,6 +547,8 @@ export class ModelManager {
                         await this.applySignpostMaterials(root, item)
                     } else if (item.type === 'acrylic') {
                         this.applyAcrylicMaterials(root, item)
+                    } else if (item.type === 'screen') {
+                        await this.applyScreenMaterials(root, item)
                     }
 
                     // Configure shadows
@@ -528,6 +633,20 @@ export class ModelManager {
             console.error(`Failed to load screenshot for signpost: ${item.screenshotPath}`, error)
         }
     }
+
+    async applyScreenMaterials(root, item) {
+        if (!item.screenshotPath) return
+
+        try {
+            const texture = await this.loadTexture(item.screenshotPath)
+            this.configureTexture(texture)
+            this.applyTextureToScreen(root, texture)
+        } catch (error) {
+            console.error(`Failed to load screenshot for signpost: ${item.screenshotPath}`, error)
+        }
+    }
+
+
 
     /**
      * Applies the character texture to the acrylic stand model and configures its
