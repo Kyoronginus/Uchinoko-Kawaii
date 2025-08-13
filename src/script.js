@@ -8,6 +8,27 @@ import { ProjectZoneManager } from './interaction/ProjectZoneManager.js'
 import { EnvironmentManager } from './environment/EnvironmentManager.js'
 import { TextManager } from './environment/TextManager.js';
 import { PhysicsManager } from './physics/PhysicsManager.js'
+
+
+// ★★★★★ 1. ローディングマネージャーを最初に作成 ★★★★★
+const loadingManager = new THREE.LoadingManager(
+    // 全ての読み込みが完了したときに呼ばれる関数
+    () => {
+        console.log('All assets loaded, starting animation.');
+        // ローディング画面を非表示にするなどの処理をここに追加
+        
+        // アニメーションループを開始
+        animate();
+    },
+    // (任意) 各アイテムの読み込み進捗を監視する関数
+    (itemUrl, itemsLoaded, itemsTotal) => {
+        const progress = itemsLoaded / itemsTotal;
+        console.log(`Loading ${itemUrl}. Progress: ${Math.round(progress * 100)}%`);
+    }
+);
+// ★★★★★ ここまで ★★★★★
+
+
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
 
@@ -41,12 +62,13 @@ const hd2dRenderer = new HD2DRenderer(canvas, sizes, scene, camera)
 
 // Initialize managers
 const physicsManager = new PhysicsManager()
-const modelManager = new ModelManager(scene, physicsManager)
+// ✅ ローディングマネージャーを渡す
+const modelManager = new ModelManager(scene, physicsManager, loadingManager) 
 const lightingManager = new LightingManager(scene)
-const environmentManager = new EnvironmentManager(scene)
-
-// Project zone manager will be initialized after signposts are loaded
+// ✅ ローディングマネージャーを渡す
+const environmentManager = new EnvironmentManager(scene, loadingManager) 
 let projectZoneManager = null
+
 const textManager = new TextManager(scene);
 textManager.createWelcomeText();
 // Initialize the scene asynchronouslya

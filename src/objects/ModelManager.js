@@ -738,7 +738,7 @@ export class ModelManager {
             if (child.isMesh && child.material && child.material.name === 'M_Screen') {
                 child.material = new THREE.MeshBasicMaterial({ map: texture });
                 // テクスチャの上下反転を修正
-                texture.flipY = false;
+                // texture.flipY = false;
                 texture.needsUpdate = true; // テクスチャの更新をThree.jsに通知
             }
         });

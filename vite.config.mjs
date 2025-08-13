@@ -11,7 +11,7 @@ export default {
     },
     build:
     {
-        outDir: '../dist', // Output in the dist/ folder
+        outDir: '../static', // Output in the static/ folder
         emptyOutDir: true, // Empty the folder first
         sourcemap: true // Add sourcemap
     },
