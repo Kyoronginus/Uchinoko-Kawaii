@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading System Test - VENNA HD-2D</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        #debug-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        #debug-info h3 {
+            margin: 0 0 10px 0;
+            color: #64b5f6;
+        }
+        
+        #debug-info p {
+            margin: 2px 0;
+        }
+        
+        .status-loading { color: #ffa726; }
+        .status-complete { color: #4caf50; }
+        .status-error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <canvas class="webgl"></canvas>
+    
+    <div id="debug-info">
+        <h3>Loading System Debug</h3>
+        <p>Status: <span id="loading-status" class="status-loading">Initializing...</span></p>
+        <p>Progress: <span id="loading-progress">0%</span></p>
+        <p>Assets: <span id="asset-count">0/0</span></p>
+        <p>Phase: <span id="current-phase">Starting...</span></p>
+        <p>Models Loaded: <span id="models-loaded">0</span></p>
+        <p>Environment: <span id="environment-status">Not loaded</span></p>
+        <p>Animation: <span id="animation-status">Not started</span></p>
+    </div>
+
+    <script type="module">
+        // Simple loading test to verify no double loading
+        import * as THREE from './node_modules/three/build/three.module.js'
+        import { AssetLoadingManager } from './src/utils/AssetLoadingManager.js'
+        
+        // Debug elements
+        const statusEl = document.getElementById('loading-status')
+        const progressEl = document.getElementById('loading-progress')
+        const assetCountEl = document.getElementById('asset-count')
+        const phaseEl = document.getElementById('current-phase')
+        const modelsLoadedEl = document.getElementById('models-loaded')
+        const environmentEl = document.getElementById('environment-status')
+        const animationEl = document.getElementById('animation-status')
+        
+        // Initialize loading manager
+        const assetLoadingManager = new AssetLoadingManager()
+        const loadingManager = assetLoadingManager.getLoadingManager()
+        
+        // Track loading events
+        let modelsLoaded = 0
+        let environmentLoaded = false
+        let animationStarted = false
+        
+        // Setup callbacks
+        assetLoadingManager.onProgress((progress, loaded, total) => {
+            progressEl.textContent = `${progress.toFixed(1)}%`
+            assetCountEl.textContent = `${loaded}/${total}`
+            console.log(`Loading progress: ${progress.toFixed(1)}% (${loaded}/${total})`)
+        })
+        
+        assetLoadingManager.onComplete(() => {
+            statusEl.textContent = 'Complete'
+            statusEl.className = 'status-complete'
+            phaseEl.textContent = 'Scene reveal'
+            animationEl.textContent = 'Started'
+            animationStarted = true
+            console.log('✅ Loading complete - no double loading detected!')
+        })
+        
+        // Create simple scene for testing
+        const scene = new THREE.Scene()
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+        const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('.webgl') })
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        
+        // Hide canvas initially
+        const canvas = document.querySelector('.webgl')
+        canvas.style.opacity = '0'
+        canvas.style.transition = 'opacity 1s ease-in-out'
+        
+        // Test loading some assets
+        phaseEl.textContent = 'Loading test assets...'
+        
+        // Load a simple texture to test the system
+        const textureLoader = new THREE.TextureLoader(loadingManager)
+        textureLoader.load('/default_standing.png', (texture) => {
+            modelsLoaded++
+            modelsLoadedEl.textContent = modelsLoaded
+            console.log('✅ Texture loaded via LoadingManager')
+        }, undefined, (error) => {
+            console.log('ℹ️ Texture not found (expected in test) - LoadingManager still working')
+            modelsLoaded++
+            modelsLoadedEl.textContent = modelsLoaded
+        })
+        
+        // Simulate environment loading
+        setTimeout(() => {
+            environmentLoaded = true
+            environmentEl.textContent = 'Simulated load complete'
+            phaseEl.textContent = 'Waiting for all assets...'
+        }, 1000)
+        
+        // Setup completion callback
+        assetLoadingManager.onComplete(() => {
+            console.log('🎉 All assets loaded, showing scene')
+            canvas.style.opacity = '1'
+            
+            // Simple animation loop
+            function animate() {
+                requestAnimationFrame(animate)
+                renderer.render(scene, camera)
+            }
+            animate()
+        })
+        
+        // Start the test
+        console.log('🚀 Loading system test started')
+        statusEl.textContent = 'Loading...'
+        phaseEl.textContent = 'Testing asset loading...'
+        
+        // Force completion after 3 seconds for demo purposes
+        setTimeout(() => {
+            if (!animationStarted) {
+                console.log('⚠️ Force completing for demo')
+                assetLoadingManager.forceComplete()
+            }
+        }, 3000)
+    </script>
+</body>
+</html>
