@@ -12,7 +12,7 @@ import { PhysicsManager } from './physics/PhysicsManager.js'
 const loadingOverlay = document.getElementById('loading-overlay');
 const progressBarFill = document.getElementById('progress-bar-fill');
 const startButton = document.getElementById('start-button');
-// ★★★★★ 1. DefaultLoadingManager を使用（全ローダーを自動追跡） ★★★★★
+// ★★★★★ 1. DefaultLoadingManager を使用（全ローダーを自動追跡） ★★★★★ s
 const loadingManager = THREE.DefaultLoadingManager
 
 // 完了時の処理（全アセットが読み込み終わったら）
@@ -26,14 +26,12 @@ loadingManager.onLoad = () => {
         }
     }, 500);
 }
-
 // 進捗中の処理
 loadingManager.onProgress = (itemUrl, itemsLoaded, itemsTotal) => {
     const progress = itemsTotal > 0 ? (itemsLoaded / itemsTotal) : 0;
     if (progressBarFill) progressBarFill.style.width = `${progress * 100}%`;
     console.log(`📦 ロード進捗: ${Math.round(progress * 100)}% (${itemsLoaded}/${itemsTotal}) - ${itemUrl}`);
 }
-
 // エラー時の処理
 loadingManager.onError = (url) => {
     console.error('❌ アセットのロードに失敗:', url);
@@ -63,12 +61,57 @@ const character = new PixelCharacter('/default_standing.png', scene, camera)
 
 // Camera Controller (キャラクター追従モード)
 const cameraController = new CameraController(camera, character)
+const cameraAngleZones = [
+
+    //look above for standee
+    {
+        // ゾーンの範囲
+        box: new THREE.Box3(
+            new THREE.Vector3(-1, -Infinity, -9), // 最小座標
+            new THREE.Vector3(1, Infinity, -7)       // 最大座標
+        ),
+        // このゾーンに入ったときの新しいカメラアングル
+        angle: {
+            // for gallery
+            followDistance: new THREE.Vector3(0, 3, 8), // キャラクターからの相対位置
+            lookAtOffset: new THREE.Vector3(0, 6, 0) // 見る位置のオフセット      // 少し上を見る
+        }
+    },
+    //Gallery
+    {
+        // ゾーンの範囲
+        box: new THREE.Box3(
+            new THREE.Vector3(8, -Infinity, -40), // 最小座標
+            new THREE.Vector3(28, Infinity, 5)       // 最大座標
+        ),
+        // このゾーンに入ったときの新しいカメラアングル
+        angle: {
+            // for gallery
+            followDistance: new THREE.Vector3(0, 3, 8), // キャラクターからの相対位置
+            lookAtOffset: new THREE.Vector3(0, 3, 0) // 見る位置のオフセット      // 少し上を見る
+        }
+    },
+    // Creator
+    {
+        // ゾーンの範囲
+        box: new THREE.Box3(
+            new THREE.Vector3(-28, -Infinity, -40), // 最小座標
+            new THREE.Vector3(-8, Infinity, 5)       // 最大座標
+        ),
+        // このゾーンに入ったときの新しいカメラアングル
+        angle: {
+            // for gallery
+            followDistance: new THREE.Vector3(0, 13, 8), // キャラクターからの相対位置
+            lookAtOffset: new THREE.Vector3(0, 3, 0) // 見る位置のオフセット      // 少し上を見る
+        }
+    },
+];
+let currentAngleZone = null;
+
+
 
 // HD-2D Renderer
 const hd2dRenderer = new HD2DRenderer(canvas, sizes, scene, camera)
-// Test different DOF settings
-// hd2dRenderer.setAperture(0.05);  // Strong blur effect
-// hd2dRenderer.setMaxBlur(0.02);   // Visible blur amount
 
 
 
@@ -150,6 +193,11 @@ function setupExampleText() {
     )
 }
 
+
+
+
+
+
 // Start scene initialization
 initializeScene()
 
@@ -166,6 +214,32 @@ function animate() {
     // Update character input and visuals (will set desired velocity)
     const deltaTime = 1 / 60; // Approximate delta time for 60fps
     character.update()
+
+
+    const charPos = character.getPosition();
+    let inAnyZone = false;
+
+    // すべてのカメラゾーンをチェック
+    for (const zone of cameraAngleZones) {
+        if (zone.box.containsPoint(charPos)) {
+            inAnyZone = true;
+            if (currentAngleZone !== zone) {
+                // 新しいゾーンに入ったので、カメラアングルを変更
+                currentAngleZone = zone;
+                cameraController.setFollowAngle(zone.angle);
+            }
+            break;
+        }
+    }
+
+    // どのゾーンにも入っていない場合
+    if (!inAnyZone && currentAngleZone !== null) {
+        // デフォルトのアングルに戻す
+        currentAngleZone = null;
+        cameraController.resetToDefaultAngle();
+    }
+
+
 
     // Drive the character's physics body from input
     if (character.physicsBody) {

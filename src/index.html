@@ -51,7 +51,7 @@
             width: 100%;
             height: 100%;
             /* 紫からピンクがかった黄色へのグラデーション */
-            background: linear-gradient(to bottom, #a881e3, #f5d7b5);
+            background: linear-gradient(to bottom, #ffffff, #b5ebf5);
             z-index: -1;
             /* canvasの背面に配置 */
         }
@@ -115,7 +115,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #f5d7b5;
+            background-color: #b5eef5;
             /* 背景色 */
             display: flex;
             justify-content: center;
@@ -138,13 +138,22 @@
         #progress-bar-fill {
             width: 0%;
             height: 100%;
-            background-color: #a881e3;
+            background-color: #9698ff;
             transition: width 0.5s ease;
         }
 
+        .start-button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            /* Add some space above the button */
+        }
+
         #start-button {
-            padding: 10px 20px;
+            padding: 20px 40px;
+            border: none;
             font-family: 'Silkscreen', monospace;
+            font-size: 1.5em;
             display: none;
             /* 最初は非表示 */
             cursor: pointer;
@@ -159,7 +168,9 @@
             <div id="progress-bar">
                 <div id="progress-bar-fill"></div>
             </div>
-            <button id="start-button">START</button>
+            <div class="start-button-container">
+                <button id="start-button">START</button>
+            </div>
         </div>
     </div>
     <!-- Font preload element to ensure Silkscreen is available -->
