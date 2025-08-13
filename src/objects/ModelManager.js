@@ -6,9 +6,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
  * Uses consistent physics behavior with configurable mass (high mass = immovable like signposts)
  */
 export class ModelManager {
-    constructor(scene, physicsManager = null) {
+    constructor(scene, physicsManager = null, loadingManager = null) {
         this.scene = scene
         this.physics = physicsManager
+        this.gltfLoader = new GLTFLoader(loadingManager)
         this.gltfLoader = new GLTFLoader()
         this.textureLoader = new THREE.TextureLoader()
         this.models = []

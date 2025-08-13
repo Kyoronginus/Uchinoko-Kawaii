@@ -9,23 +9,35 @@ import { EnvironmentManager } from './environment/EnvironmentManager.js'
 import { TextManager } from './environment/TextManager.js';
 import { PhysicsManager } from './physics/PhysicsManager.js'
 
+const loadingOverlay = document.getElementById('loading-overlay');
+const progressBarFill = document.getElementById('progress-bar-fill');
+const startButton = document.getElementById('start-button');
+// ★★★★★ 1. DefaultLoadingManager を使用（全ローダーを自動追跡） ★★★★★
+const loadingManager = THREE.DefaultLoadingManager
 
-// ★★★★★ 1. ローディングマネージャーを最初に作成 ★★★★★
-const loadingManager = new THREE.LoadingManager(
-    // 全ての読み込みが完了したときに呼ばれる関数
-    () => {
-        console.log('All assets loaded, starting animation.');
-        // ローディング画面を非表示にするなどの処理をここに追加
-        
-        // アニメーションループを開始
-        animate();
-    },
-    // (任意) 各アイテムの読み込み進捗を監視する関数
-    (itemUrl, itemsLoaded, itemsTotal) => {
-        const progress = itemsLoaded / itemsTotal;
-        console.log(`Loading ${itemUrl}. Progress: ${Math.round(progress * 100)}%`);
-    }
-);
+// 完了時の処理（全アセットが読み込み終わったら）
+loadingManager.onLoad = () => {
+    console.log('✅ すべてのアセットのロードが完了しました');
+    if (progressBarFill) progressBarFill.style.width = '100%';
+    setTimeout(() => {
+        if (startButton) {
+            startButton.style.display = 'block';
+            startButton.style.opacity = '1';
+        }
+    }, 500);
+}
+
+// 進捗中の処理
+loadingManager.onProgress = (itemUrl, itemsLoaded, itemsTotal) => {
+    const progress = itemsTotal > 0 ? (itemsLoaded / itemsTotal) : 0;
+    if (progressBarFill) progressBarFill.style.width = `${progress * 100}%`;
+    console.log(`📦 ロード進捗: ${Math.round(progress * 100)}% (${itemsLoaded}/${itemsTotal}) - ${itemUrl}`);
+}
+
+// エラー時の処理
+loadingManager.onError = (url) => {
+    console.error('❌ アセットのロードに失敗:', url);
+}
 // ★★★★★ ここまで ★★★★★
 
 
@@ -62,11 +74,9 @@ const hd2dRenderer = new HD2DRenderer(canvas, sizes, scene, camera)
 
 // Initialize managers
 const physicsManager = new PhysicsManager()
-// ✅ ローディングマネージャーを渡す
-const modelManager = new ModelManager(scene, physicsManager, loadingManager) 
+const modelManager = new ModelManager(scene, physicsManager)
 const lightingManager = new LightingManager(scene)
-// ✅ ローディングマネージャーを渡す
-const environmentManager = new EnvironmentManager(scene, loadingManager) 
+const environmentManager = new EnvironmentManager(scene)
 let projectZoneManager = null
 
 const textManager = new TextManager(scene);
@@ -199,4 +209,14 @@ window.addEventListener('resize', () => {
     hd2dRenderer.setSize(sizes.width, sizes.height)
 })
 
-animate()
+startButton.addEventListener('click', () => {
+    console.log('🚀 3Dワールドを開始します');
+    loadingOverlay.style.opacity = '0'; // フェードアウト
+    setTimeout(() => {
+        loadingOverlay.style.display = 'none'; // 完全に非表示に
+        animate(); // ★ ここでアニメーションを開始
+    }, 500);
+});
+
+// ★ 最初はanimate()を呼ばない（STARTボタンが押されるまで待機）
+// animate() ← この行をコメントアウトまたは削除

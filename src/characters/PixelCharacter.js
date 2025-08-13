@@ -1,9 +1,10 @@
 import * as THREE from 'three'
 
 export class PixelCharacter {
-    constructor(textureUrl, scene, camera = null) {
+    constructor(textureUrl, scene, camera = null, loadingManager = null) {
         this.scene = scene
         this.camera = camera
+        this.loadingManager = loadingManager || THREE.DefaultLoadingManager
         this.position = new THREE.Vector3(5, 0.1, -16) // キャラクターの基準Y位置a
         this.initialPosition = new THREE.Vector3(0,0.1,8);
         this.moveSpeed = 2
@@ -33,7 +34,7 @@ export class PixelCharacter {
     }
 
     setupCharacterSprite(textureUrl) {
-        const textureLoader = new THREE.TextureLoader()
+        const textureLoader = new THREE.TextureLoader(this.loadingManager) // 統一されたマネージャーを使用
         textureLoader.load(textureUrl, (texture) => {
             texture.magFilter = THREE.NearestFilter
             texture.minFilter = THREE.NearestFilter

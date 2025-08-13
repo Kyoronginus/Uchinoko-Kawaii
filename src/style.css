@@ -1,0 +1,19 @@
+#start-button {
+    display: none; /* 初期は非表示 */
+    opacity: 0; /* フェードイン効果用 */
+    padding: 15px 30px;
+    font-size: 18px;
+    font-family: 'Silkscreen', monospace;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+#start-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}

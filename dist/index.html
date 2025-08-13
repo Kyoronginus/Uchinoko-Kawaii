@@ -108,11 +108,61 @@
             text-decoration: none;
             font-weight: bold;
         }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f5d7b5;
+            /* 背景色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s ease;
+        }
+
+        #loading-ui {
+            text-align: center;
+        }
+
+        #progress-bar {
+            width: 300px;
+            height: 10px;
+            background-color: rgba(0, 0, 0, 0.2);
+            margin: 20px 0;
+        }
+
+        #progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background-color: #a881e3;
+            transition: width 0.5s ease;
+        }
+
+        #start-button {
+            padding: 10px 20px;
+            font-family: 'Silkscreen', monospace;
+            display: none;
+            /* 最初は非表示 */
+            cursor: pointer;
+        }
     </style>
-  <script type="module" crossorigin src="/assets/index-tWA961oo.js"></script>
+  <script type="module" crossorigin src="/assets/index-B0XPQ4gZ.js"></script>
 </head>
 
 <body>
+    <div id="loading-overlay">
+        <div id="loading-ui">
+            <h2>Loading...</h2>
+            <div id="progress-bar">
+                <div id="progress-bar-fill"></div>
+            </div>
+            <button id="start-button">START</button>
+        </div>
+    </div>
     <!-- Font preload element to ensure Silkscreen is available -->
     <div class="font-preload">Silkscreen Font Preload</div>
 
