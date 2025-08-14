@@ -63,7 +63,7 @@ export class HD2DRenderer {
         )
 
         // 1. Effect Composerのセットアップ (full resolution for DOF)
-        this.composer = new EffectComposer(this.renderer, this.composerRenderTarget)
+        this.composer = new EffectComposer(this.renderer)
         this.composer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
         this.composer.setSize(this.sizes.width, this.sizes.height)
 
@@ -100,7 +100,7 @@ export class HD2DRenderer {
         //         uniform vec2 resolution;
         //         uniform float pixelSize;
         //         varying vec2 vUv;
-                
+
         //         void main() {
         //             vec2 dxy = pixelSize / resolution;
         //             vec2 coord = dxy * floor(vUv / dxy);
@@ -122,15 +122,8 @@ export class HD2DRenderer {
     }
 
     render(scene, camera) {
-        // 1. EffectComposerで、被写界深度を含むエフェクトをレンダリング
+        // EffectComposerが直接スクリーンに結果を描画します
         this.composer.render()
-
-        // 2. ポストプロセッシングの結果を、ピクセルアート化シェーダーに渡す
-        this.pixelArtMaterial.uniforms.tDiffuse.value = this.composer.readBuffer.texture
-        
-        // 3. 最終結果をスクリーンに描画
-        this.renderer.setRenderTarget(null)
-        this.renderer.render(this.postProcessScene, this.postProcessCamera)
     }
 
     setSize(width, height) {
@@ -142,7 +135,7 @@ export class HD2DRenderer {
         // Update both render targets
         const pixelRatio = 0.5
         this.renderTarget.setSize(width * pixelRatio, height * pixelRatio)
-        this.composerRenderTarget.setSize(width, height)
+        // this.composerRenderTarget.setSize(width, height)
 
         // Update composer size
         this.composer.setSize(width, height)
@@ -150,7 +143,7 @@ export class HD2DRenderer {
         // Update bokeh pass parameters
         this.bokehPass.setSize(width, height)
 
-        this.pixelArtMaterial.uniforms.resolution.value.set(width, height)
+        // this.pixelArtMaterial.uniforms.resolution.value.set(width, height)
     }
 
     /**
