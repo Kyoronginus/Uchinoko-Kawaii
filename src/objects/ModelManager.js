@@ -231,11 +231,11 @@ export class ModelManager {
             },
             //foundation_acrylic_stand
             {
-                modelPath: '/foundation_acrylic_stand.glb',
-                position: new THREE.Vector3(0, 1, -12.5),
+                modelPath: '/foundation_chibi_acrylic_stand.glb',
+                position: new THREE.Vector3(0, 5, -12.5),
                 rotation: new THREE.Euler(0, 0, 0),
                 scale: new THREE.Vector3(3, 3, 3),
-                type: 'acrylic',
+                type: 'untextured',
                 enableCollision: true,
                 enablePhysics: true,
                 physicsShape: 'box',
@@ -615,7 +615,7 @@ export class ModelManager {
                         material.color = new THREE.Color(0xffffff);
                     }
                     // その他のプロパティも必要に応じて調整可能
-                    // material.roughness = 0.8; 
+                    // material.opacity = 0.8; 
                 });
             }
         });

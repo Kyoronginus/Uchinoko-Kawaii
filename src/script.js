@@ -74,7 +74,7 @@ const cameraAngleZones = [
         angle: {
             // for gallery
             followDistance: new THREE.Vector3(0, 3, 8), // キャラクターからの相対位置
-            lookAtOffset: new THREE.Vector3(0, 6, 0) // 見る位置のオフセット      // 少し上を見る
+            lookAtOffset: new THREE.Vector3(0, 3, 0) // 見る位置のオフセット      // 少し上を見る
         }
     },
     //Gallery
@@ -96,7 +96,7 @@ const cameraAngleZones = [
         // ゾーンの範囲
         box: new THREE.Box3(
             new THREE.Vector3(-28, -Infinity, -40), // 最小座標
-            new THREE.Vector3(-8, Infinity, 5)       // 最大座標
+            new THREE.Vector3(-3, Infinity, 5)       // 最大座標
         ),
         // このゾーンに入ったときの新しいカメラアングル
         angle: {
