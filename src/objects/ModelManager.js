@@ -483,10 +483,10 @@ export class ModelManager {
 
         this.gallery_items = [
             {
-                modelPath: 'Wireframe_Display.glb',
+                modelPath: 'board_A4_portrait.glb',
                 position: new THREE.Vector3(20, -0.3, -15),
-                rotation: new THREE.Euler(0, 3 / 2 * Math.PI, 0),
-                scale: new THREE.Vector3(3, 3, 3),
+                rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(2.7, 2.7, 2.7),
                 type: 'screen',
                 screenshotPath: '/venna_art/Illustration15.png',
                 enableCollision: true,
@@ -494,8 +494,23 @@ export class ModelManager {
                 mass: 300,
                 friction: 0.6,
                 physicsShape: 'box',
-                interactionCallback: null, // Will be set during loading
+                interactionCallback: null
             },
+            {
+                modelPath: 'board_A4_portrait.glb',
+                position: new THREE.Vector3(28, -0.3, -15),
+                rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(2.7, 2.7, 2.7),
+                type: 'screen',
+                screenshotPath: '/venna_art/Illustration22.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 300,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+
         ];
     }
 
@@ -635,6 +650,8 @@ export class ModelManager {
         }
     }
 
+
+
     async applyScreenMaterials(root, item) {
         if (!item.screenshotPath) return
 
@@ -643,21 +660,23 @@ export class ModelManager {
 
             texture.magFilter = THREE.NearestFilter
             texture.minFilter = THREE.NearestFilter
-            texture.wrapS = THREE.RepeatWrapping; // 水平方向の繰り返しを有効に
-            // texture.repeat.x = -1;
-            texture.wrapT = THREE.ClampToEdgeWrapping // 繰り返しを無効に
+            texture.wrapS = THREE.ClampToEdgeWrapping
+            texture.wrapT = THREE.ClampToEdgeWrapping
+            texture.repeat.x = -1;
+
+            // Rotate texture 90 degrees clockwise to correct orientation
+            texture.center.set(0.5, 0.5)
+            texture.rotation = Math.PI / 2
 
             root.traverse((child) => {
                 const substring = 'M_Screen'
                 if (child.isMesh && child.material && child.material.name.includes(substring)) {
                     child.material = new THREE.MeshBasicMaterial({ map: texture });
-                    // テクスチャの上下反転を修正
-                    texture.flipY = false;
-                    texture.needsUpdate = true; // テクスチャの更新をThree.jsに通知
+                    texture.needsUpdate = true;
                 }
             });
         } catch (error) {
-            console.error(`Failed to load screenshot for signpost: ${item.screenshotPath}`, error)
+            console.error(`Failed to load screenshot for screen: ${item.screenshotPath}`, error)
         }
     }
 
