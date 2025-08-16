@@ -13,8 +13,8 @@ export class LightingManager {
             },
             directional: {
                 color: 0xffffff,
-                intensity: 3.5,
-                position: { x: 20, y: 10, z: 10 },
+                intensity: 2.5,
+                position: { x: 50, y: 50, z: 50 },
                 castShadow: true,
                 shadow: {
                     mapSize: { width: 1024, height: 1024 }, // Higher resolution for crisp shadows
