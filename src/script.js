@@ -146,6 +146,7 @@ async function initializeScene() {
 
         // Add some example floor text
         setupExampleText()
+        setupCreatorText()
 
         console.log('Scene initialization complete')
     } catch (error) {
@@ -193,6 +194,30 @@ function setupExampleText() {
     )
 }
 
+function setupCreatorText() {
+    environmentManager.addFloorText('This site has been created by',
+        { x: -20, z: -12 },
+        {
+            font: '10px Silkscreen',
+            color: '#FFFFFF',
+            outline: false,
+            outlineColor: '#000000',
+            outlineWidth: 2,
+            scale: 2
+        }
+    )
+    environmentManager.addFloorText('Kyoronginus',
+        { x: -20, z: -10 },
+        {
+            font: '10px Silkscreen',
+            color: '#FFFFFF',
+            outline: false,
+            outlineColor: '#000000',
+            outlineWidth: 2,
+            scale: 2
+        }
+    )
+}
 
 
 
