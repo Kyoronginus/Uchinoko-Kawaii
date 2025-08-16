@@ -4,7 +4,7 @@ export class LightingManager {
     constructor(scene) {
         this.scene = scene
         this.lights = {}
-        
+
         // Default lighting configuration
         this.config = {
             ambient: {
@@ -17,14 +17,14 @@ export class LightingManager {
                 position: { x: 20, y: 10, z: 10 },
                 castShadow: true,
                 shadow: {
-                    mapSize: { width: 256, height: 256 }, // Higher resolution for crisp shadows
+                    mapSize: { width: 1024, height: 1024 }, // Higher resolution for crisp shadows
                     camera: {
                         near: 0.1,
-                        far: 100,
-                        left: -50,
-                        right: 50,
-                        top: 50,
-                        bottom: -50
+                        far: 100, // farの値も必要に応じて調整
+                        left: -250,
+                        right: 250,
+                        top: 250,
+                        bottom: -250
                     },
                     bias: -0.010, // Reduced bias for sharper shadows
                     normalBias: 0.001 // Reduced normal bias
@@ -39,7 +39,7 @@ export class LightingManager {
     setupLighting() {
         this.createAmbientLight()
         this.createDirectionalLight()
-        
+
         console.log('Lighting system initialized')
     }
 
@@ -51,10 +51,10 @@ export class LightingManager {
             this.config.ambient.color,
             this.config.ambient.intensity
         )
-        
+
         this.lights.ambient = ambientLight
         this.scene.add(ambientLight)
-        
+
         console.log('Ambient light created')
     }
 
@@ -66,20 +66,20 @@ export class LightingManager {
             this.config.directional.color,
             this.config.directional.intensity
         )
-        
+
         // Set position
         const pos = this.config.directional.position
         directionalLight.position.set(pos.x, pos.y, pos.z)
-        
+
         // Enable shadow casting
         directionalLight.castShadow = this.config.directional.castShadow
-        
+
         // Configure shadow properties
         this.configureShadows(directionalLight)
-        
+
         this.lights.directional = directionalLight
         this.scene.add(directionalLight)
-        
+
         console.log('Directional light created with shadows')
     }
 
@@ -89,7 +89,7 @@ export class LightingManager {
      */
     configureShadows(light) {
         const shadowConfig = this.config.directional.shadow
-        
+
         // Shadow camera configuration
         light.shadow.camera.near = shadowConfig.camera.near
         light.shadow.camera.far = shadowConfig.camera.far
@@ -97,7 +97,7 @@ export class LightingManager {
         light.shadow.camera.right = shadowConfig.camera.right
         light.shadow.camera.top = shadowConfig.camera.top
         light.shadow.camera.bottom = shadowConfig.camera.bottom
-        
+
         // Shadow map quality settings
         light.shadow.mapSize.width = shadowConfig.mapSize.width
         light.shadow.mapSize.height = shadowConfig.mapSize.height
@@ -210,21 +210,21 @@ export class LightingManager {
      */
     updateConfig(newConfig) {
         this.config = { ...this.config, ...newConfig }
-        
+
         // Reapply configuration to existing lights
         if (this.lights.ambient && newConfig.ambient) {
             this.lights.ambient.intensity = this.config.ambient.intensity
         }
-        
+
         if (this.lights.directional && newConfig.directional) {
             const light = this.lights.directional
             light.intensity = this.config.directional.intensity
-            
+
             if (newConfig.directional.position) {
                 const pos = this.config.directional.position
                 light.position.set(pos.x, pos.y, pos.z)
             }
-            
+
             if (newConfig.directional.shadow) {
                 this.configureShadows(light)
             }
@@ -238,7 +238,7 @@ export class LightingManager {
         Object.keys(this.lights).forEach(name => {
             this.scene.remove(this.lights[name])
         })
-        
+
         this.lights = {}
         console.log('Lighting system disposed')
     }

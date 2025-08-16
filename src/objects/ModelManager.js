@@ -484,9 +484,9 @@ export class ModelManager {
         this.gallery_items = [
             {
                 modelPath: 'board_A4_portrait.glb',
-                position: new THREE.Vector3(20, -0.3, -15),
+                position: new THREE.Vector3(20, 0.3, -15),
                 rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
-                scale: new THREE.Vector3(2.7, 2.7, 2.7),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'screen',
                 screenshotPath: '/venna_art/Illustration15.png',
                 enableCollision: true,
@@ -500,7 +500,7 @@ export class ModelManager {
                 modelPath: 'board_A4_portrait.glb',
                 position: new THREE.Vector3(28, -0.3, -15),
                 rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
-                scale: new THREE.Vector3(2.7, 2.7, 2.7),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'screen',
                 screenshotPath: '/venna_art/Illustration22.png',
                 enableCollision: true,
@@ -510,6 +510,77 @@ export class ModelManager {
                 physicsShape: 'box',
                 interactionCallback: null
             },
+            {
+                modelPath: 'board_A4_portrait.glb',
+                position: new THREE.Vector3(36, -0.3, -15),
+                rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'screen',
+                screenshotPath: '/venna_art/Illustration139.clipbu.pngbu.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 300,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'board_A4_portrait.glb',
+                position: new THREE.Vector3(44, -0.3, -15),
+                rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'screen',
+                screenshotPath: 'venna_art/Illustration173.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 300,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'board_A4_portrait.glb',
+                position: new THREE.Vector3(52, -0.3, -15),
+                rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'screen',
+                screenshotPath: 'venna_art/Illustration191.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 300,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'board_A4_portrait.glb',
+                position: new THREE.Vector3(52, -0.3, -25),
+                rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'screen',
+                screenshotPath: 'venna_art/Illustration191.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 300,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'foundation_acrylic_stand.glb',
+                position: new THREE.Vector3(16, -0.3, -7),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+                type: 'screen',
+                screenshotPath: '/venna_art/Illustration139.clipbu.pngbu.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 4,
+                friction: 0.000001,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+
 
         ];
     }

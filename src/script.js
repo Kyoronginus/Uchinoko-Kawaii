@@ -81,8 +81,8 @@ const cameraAngleZones = [
     {
         // ゾーンの範囲
         box: new THREE.Box3(
-            new THREE.Vector3(8, -Infinity, -40), // 最小座標
-            new THREE.Vector3(28, Infinity, 5)       // 最大座標
+            new THREE.Vector3(8, -Infinity, -30), // 最小座標
+            new THREE.Vector3(68, Infinity, -10)       // 最大座標
         ),
         // このゾーンに入ったときの新しいカメラアングル
         angle: {
