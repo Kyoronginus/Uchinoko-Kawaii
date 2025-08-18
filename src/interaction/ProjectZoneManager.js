@@ -1,8 +1,9 @@
 import * as THREE from 'three'
 
 export class ProjectZoneManager {
-    constructor(projects) {
-        this.projects = projects
+    constructor(projectEntries) {
+        // Expect array of { mesh, item }
+        this.projectEntries = projectEntries
         this.activeZone = null
         this.linkContainer = null
         this.linkElement = null
@@ -31,8 +32,10 @@ export class ProjectZoneManager {
     update(characterPosition) {
         let inAnyZone = false
 
-        for (const project of this.projects) {
-            const isInside = this.isCharacterInZone(characterPosition, project)
+        for (const entry of this.projectEntries) {
+            const project = entry.item
+            const mesh = entry.mesh
+            const isInside = this.isCharacterInZone(characterPosition, project, mesh)
 
             if (isInside) {
                 inAnyZone = true
@@ -68,12 +71,13 @@ export class ProjectZoneManager {
 
         const halfWidth = project.zoneWidth / 2;
         const halfDepth = project.zoneDepth / 2;
+        const zoneDepth = project.zoneDepth;
 
         // Now, perform a simple AABB check in the signpost's local space
         return (
             localCharPos.x > -halfWidth &&
             localCharPos.x < halfWidth &&
-            localCharPos.z > -halfDepth &&
+            localCharPos.z > -zoneDepth &&
             localCharPos.z < halfDepth
         );
     }
@@ -150,12 +154,12 @@ export class ProjectZoneManager {
      * @returns {Array} - Array of project configurations
      */
     getZones() {
-        return this.projects.map(project => ({
-            name: project.name,
-            position: project.position,
-            width: project.zoneWidth,
-            depth: project.zoneDepth,
-            url: project.url
+        return this.projectEntries.map(entry => ({
+            name: entry.item.name,
+            position: entry.mesh.position,
+            width: entry.item.zoneWidth,
+            depth: entry.item.zoneDepth,
+            url: entry.item.url
         }))
     }
 
@@ -167,8 +171,10 @@ export class ProjectZoneManager {
     addDebugHelpers(scene, visible = false) {
         this.debugHelpers = []
 
-        this.projects.forEach((project, index) => {
-            // Create a wireframe box to visualize the zone
+        this.projectEntries.forEach((entry) => {
+            const project = entry.item
+            const mesh = entry.mesh
+
             const geometry = new THREE.BoxGeometry(
                 project.zoneWidth,
                 0.1,
@@ -183,7 +189,7 @@ export class ProjectZoneManager {
             })
 
             const helper = new THREE.Mesh(geometry, material)
-            helper.position.copy(project.position)
+            helper.position.copy(mesh.position)
             helper.position.y = 0.05 // Slightly above ground
             helper.visible = visible
 
@@ -210,12 +216,11 @@ export class ProjectZoneManager {
      * Update projects array (useful when signposts are added/removed)
      * @param {Array} newProjects - Updated projects array
      */
-    updateProjects(newProjects) {
-        this.projects = newProjects
+    updateProjects(newEntries) {
+        this.projectEntries = newEntries
 
-        // Exit current zone if it no longer exists
         if (this.activeZone) {
-            const stillExists = newProjects.some(project => project === this.activeZone)
+            const stillExists = newEntries.some(entry => entry.item === this.activeZone)
             if (!stillExists) {
                 this.exitZone()
             }
@@ -247,7 +252,7 @@ export class ProjectZoneManager {
             this.debugHelpers = []
         }
 
-        this.projects = []
+        this.projectEntries = []
         this.linkContainer = null
         this.linkElement = null
 

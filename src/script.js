@@ -139,10 +139,11 @@ async function initializeScene() {
         // Create character physics body and keep it in sync
         character.physicsBody = physicsManager.addCharacterBody(character.getPosition(), 0.5, 1)
 
-        // Initialize project zone manager with loaded signpost models
+        // Initialize project zone manager with loaded signpost and statue models
         const signpostModels = modelManager.getModelsByType('signpost')
-        const projects = signpostModels.map(modelEntry => modelEntry.item)
-        projectZoneManager = new ProjectZoneManager(projects)
+        const statueModels = modelManager.getModelsByType('statue')
+        const projectEntries = [...signpostModels, ...statueModels]
+        projectZoneManager = new ProjectZoneManager(projectEntries)
 
         // Add some example floor text
         setupExampleText()

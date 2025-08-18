@@ -108,10 +108,10 @@ export class ModelManager {
                 friction: 0.8,
                 physicsShape: 'box',
                 // Signpost-specific properties
-                zoneWidth: 4,
-                zoneDepth: 4,
-                url: 'https://example.com/project_a',
-                name: 'Visit ColorAnalyzer'
+                // zoneWidth: 4,
+                // zoneDepth: 4,
+                // url: 'https://example.com/project_a',
+                // name: 'Visit ColorAnalyzer'
             },
             {
                 modelPath: '/signpost.glb',
@@ -126,11 +126,12 @@ export class ModelManager {
                 friction: 0.8,
                 physicsShape: 'box',
                 // Signpost-specific properties
-                zoneWidth: 4,
-                zoneDepth: 4,
-                url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
-                name: 'Visit Fibonacci Detection'
+                // zoneWidth: 4,
+                // zoneDepth: 4,
+                // url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
+                // name: 'Visit Fibonacci Detection'
             },
+
             // WASD
             {
                 modelPath: '/letters_3D/W.glb',
@@ -625,13 +626,34 @@ export class ModelManager {
 
 
         ];
+
+        this.creator_items = [
+                        // Statues - interactive zone like signposts
+            {
+                modelPath: '/social_media_placeholder.glb',
+                position: new THREE.Vector3(-26, 0, -10),
+                rotation: new THREE.Euler(0, Math.PI / 2, 0),
+                scale: new THREE.Vector3(1.5, 1.5, 1.5),
+                type: 'statue',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 10000,
+                friction: 0.8,
+                physicsShape: 'box',
+                // Statue-specific zone properties (same as signpost)
+                zoneWidth: 2,
+                zoneDepth: 2,
+                url: 'https://example.com/statue',
+                name: 'Visit Statue Project'
+            },
+        ]
     }
 
     /**
      * Initialize and load all models
      */
     async loadAllModels() {
-        const allItems = [...this.items, ...this.gallery_items];
+        const allItems = [...this.items, ...this.gallery_items, ...this.creator_items];
         const loadPromises = allItems.map(item => this.loadModel(item));
         try {
             await Promise.all(loadPromises);
@@ -678,6 +700,9 @@ export class ModelManager {
                         this.applyAcrylicMaterials(root, item)
                     } else if (item.type === 'screen') {
                         await this.applyScreenMaterials(root, item)
+                    } else if (item.type === 'statue') {
+                        // statues can share signpost-like material behavior if needed
+                        // Currently no special material handling; keep model materials
                     }
 
                     // Configure shadows
@@ -968,8 +993,8 @@ export class ModelManager {
                     }
                 }
 
-                // Handle signpost-specific interactions
-                if (modelEntry.item.type === 'signpost') {
+                // Handle signpost/statue-specific interactions
+                if (modelEntry.item && (modelEntry.item.type === 'signpost' || modelEntry.item.type === 'statue')) {
                     this.handleSignpostInteraction(modelEntry.item)
                 }
 
@@ -1016,8 +1041,8 @@ export class ModelManager {
      * Handle signpost interaction (open URL)
      */
     handleSignpostInteraction(item) {
-        if (item.type === 'signpost' && item.url) {
-            console.log(`Opening signpost URL: ${item.name} -> ${item.url}`)
+        if ((item.type === 'signpost' || item.type === 'statue') && item.url) {
+            console.log(`Opening ${item.type} URL: ${item.name} -> ${item.url}`)
             window.open(item.url, '_blank')
         }
     }
