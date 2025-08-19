@@ -84,14 +84,14 @@ export class ModelManager {
             },
             {
                 modelPath: '/letters_3D/VENNA_TEXT.glb',
-                position: new THREE.Vector3(0, 7, -4),
-                rotation: new THREE.Euler(0, 0, 0),
-                scale: new THREE.Vector3(4, 4, 4),
+                position: new THREE.Vector3(-20, 7, -15),
+                rotation: new THREE.Euler(3 * Math.PI / 2, 0, 0),
+                scale: new THREE.Vector3(3, 3, 3),
                 type: 'untextured',
                 enableCollision: true,
                 enablePhysics: true,
-                physicsShape: 'sphere',
-                mass: 0.3,
+                physicsShape: 'box',
+                mass: 200,
                 interactionCallback: null, // Will be set during loading
             },
             // Signposts - very high mass, effectively immovable
@@ -479,6 +479,18 @@ export class ModelManager {
                 enableCollision: true,
                 enablePhysics: true,
                 mass: 59
+            },
+            //directions
+            {
+                modelPath: '/left.glb',
+                position: new THREE.Vector3(3, 4, -6),
+                rotation: new THREE.Euler(0, 0.9 / 2 * Math.PI, 0.8 / 2 * Math.PI),
+                scale: new THREE.Vector3(1.8, 1.8, 1.8),
+                type: 'untextured',
+                physicsShape: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 59
             }
         ];
 
@@ -628,12 +640,11 @@ export class ModelManager {
         ];
 
         this.creator_items = [
-                        // Statues - interactive zone like signposts
             {
                 modelPath: '/social_media_placeholder.glb',
-                position: new THREE.Vector3(-26, 0, -10),
-                rotation: new THREE.Euler(0, Math.PI / 2, 0),
-                scale: new THREE.Vector3(1.5, 1.5, 1.5),
+                position: new THREE.Vector3(-14, 0, -7),
+                rotation: new THREE.Euler(0, 2 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(2, 2, 2),
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
@@ -641,10 +652,61 @@ export class ModelManager {
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
-                zoneWidth: 2,
-                zoneDepth: 2,
-                url: 'https://example.com/statue',
-                name: 'Visit Statue Project'
+                zoneWidth: 1,
+                zoneDepth: 1,
+                url: 'https://github.com/Kyoronginus',
+                name: 'Github'
+            },
+            {
+                modelPath: '/social_media_placeholder.glb',
+                position: new THREE.Vector3(-18, 0, -7),
+                rotation: new THREE.Euler(0, 2 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(2, 2, 2),
+                type: 'statue',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 10000,
+                friction: 0.8,
+                physicsShape: 'box',
+                // Statue-specific zone properties (same as signpost)
+                zoneWidth: 1,
+                zoneDepth: 1,
+                url: 'https://www.patreon.com/c/Kyoronginus',
+                name: 'Patreon'
+            },
+            {
+                modelPath: '/social_media_placeholder.glb',
+                position: new THREE.Vector3(-22, 0, -7),
+                rotation: new THREE.Euler(0, 2 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(2, 2, 2),
+                type: 'statue',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 10000,
+                friction: 0.8,
+                physicsShape: 'box',
+                // Statue-specific zone properties (same as signpost)
+                zoneWidth: 1,
+                zoneDepth: 1,
+                url: 'https://x.com/kyoro_ina',
+                name: 'X'
+            },
+            {
+                modelPath: '/social_media_placeholder.glb',
+                position: new THREE.Vector3(-26, 0, -7),
+                rotation: new THREE.Euler(0, 2 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(2, 2, 2),
+                type: 'statue',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 10000,
+                friction: 0.8,
+                physicsShape: 'box',
+                // Statue-specific zone properties (same as signpost)
+                zoneWidth: 1,
+                zoneDepth: 1,
+                url: 'https://www.pixiv.net/users/34124210',
+                name: 'pixiv'
             },
         ]
     }
