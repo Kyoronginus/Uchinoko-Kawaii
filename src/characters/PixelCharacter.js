@@ -7,7 +7,7 @@ export class PixelCharacter {
         this.loadingManager = loadingManager || THREE.DefaultLoadingManager
         this.position = new THREE.Vector3(0, 0.1, 8) // キャラクターの基準Y位置a
         this.initialPosition = new THREE.Vector3(0,0.1,8);
-        this.moveSpeed = 10
+        this.moveSpeed = 2
         this.isMoving = false
         this.direction = 'down'
         this.collisionManager = null // Will be set by external code

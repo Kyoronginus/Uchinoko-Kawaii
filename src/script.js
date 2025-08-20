@@ -148,6 +148,7 @@ async function initializeScene() {
         // Add some example floor text
         setupExampleText()
         setupCreatorText()
+        setupGalleryText()
 
         console.log('Scene initialization complete')
     } catch (error) {
@@ -220,7 +221,19 @@ function setupCreatorText() {
     )
 }
 
-
+function setupGalleryText() {
+        environmentManager.addFloorText('2024-2025',
+        { x: 14, z: -15 },
+        {
+            font: '10px Silkscreen',
+            color: '#FFFFFF',
+            outline: false,
+            outlineColor: '#000000',
+            outlineWidth: 2,
+            scale: 2
+        }
+    )
+}
 
 
 
