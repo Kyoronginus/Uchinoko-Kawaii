@@ -689,14 +689,14 @@ export class ModelManager {
                 name: 'Patreon'
             },
             {
-                modelPath: '/social_media_placeholder.glb',
-                position: new THREE.Vector3(-22, 0, -7),
-                rotation: new THREE.Euler(0, 2 * Math.PI / 2, 0),
+                modelPath: '/social_media_x.glb',
+                position: new THREE.Vector3(-14, 0, -14.5),
+                rotation: new THREE.Euler(0, 1.7 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(2, 2, 2),
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 10000,
+                mass: 10,
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
