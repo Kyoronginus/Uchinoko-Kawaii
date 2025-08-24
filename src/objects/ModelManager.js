@@ -706,14 +706,14 @@ export class ModelManager {
                 name: 'X'
             },
             {
-                modelPath: '/social_media_placeholder.glb',
+                modelPath: '/social_media_pixiv.glb',
                 position: new THREE.Vector3(-26, 0, -7),
-                rotation: new THREE.Euler(0, 2 * Math.PI / 2, 0),
-                scale: new THREE.Vector3(2, 2, 2),
+                rotation: new THREE.Euler(  1 * Math.PI / 2, 2 * Math.PI / 2,  3 * Math.PI / 2),
+                scale: new THREE.Vector3(0.8, 0.8, 0.8),
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 10000,
+                mass: 10,
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
