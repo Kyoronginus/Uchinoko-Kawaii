@@ -655,9 +655,9 @@ export class ModelManager {
 
         this.creator_items = [
             {
-                modelPath: '/social_media_placeholder.glb',
+                modelPath: '/social_media_github.glb',
                 position: new THREE.Vector3(-14, 0, -7),
-                rotation: new THREE.Euler(0, 2 * Math.PI / 2, 0),
+                rotation: new THREE.Euler(0, -0.3 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(2, 2, 2),
                 type: 'statue',
                 enableCollision: true,
@@ -666,20 +666,20 @@ export class ModelManager {
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
-                zoneWidth: 1,
+                zoneWidth: 2,
                 zoneDepth: 1,
                 url: 'https://github.com/Kyoronginus',
                 name: 'Github'
             },
             {
-                modelPath: '/social_media_placeholder.glb',
-                position: new THREE.Vector3(-18, 0, -7),
-                rotation: new THREE.Euler(0, 2 * Math.PI / 2, 0),
-                scale: new THREE.Vector3(2, 2, 2),
+                modelPath: '/social_media_patreon.glb',
+                position: new THREE.Vector3(-22, 0, -7),
+                rotation: new THREE.Euler(0, 24.3* Math.PI / 2, 0),
+                scale: new THREE.Vector3(1,1,1),
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 10000,
+                mass: 10,
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
@@ -690,9 +690,9 @@ export class ModelManager {
             },
             {
                 modelPath: '/social_media_x.glb',
-                position: new THREE.Vector3(-14, 0, -14.5),
+                position: new THREE.Vector3(-18, 0, -7),
                 rotation: new THREE.Euler(0, 1.7 * Math.PI / 2, 0),
-                scale: new THREE.Vector3(2, 2, 2),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
@@ -707,8 +707,8 @@ export class ModelManager {
             },
             {
                 modelPath: '/social_media_pixiv.glb',
-                position: new THREE.Vector3(-26, 0, -7),
-                rotation: new THREE.Euler(  1 * Math.PI / 2, 2 * Math.PI / 2,  3 * Math.PI / 2),
+                position: new THREE.Vector3(-26, 0, -10),
+                rotation: new THREE.Euler(0, 2.6 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(0.8, 0.8, 0.8),
                 type: 'statue',
                 enableCollision: true,
@@ -717,8 +717,8 @@ export class ModelManager {
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
-                zoneWidth: 1,
-                zoneDepth: 1,
+                zoneWidth: 2,
+                zoneDepth: 2,
                 url: 'https://www.pixiv.net/users/34124210',
                 name: 'pixiv'
             },
