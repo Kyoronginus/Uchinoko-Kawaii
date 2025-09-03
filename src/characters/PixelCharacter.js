@@ -215,7 +215,7 @@ export class PixelCharacter {
                 this.resetToStanding();
             }
             this.idleTimer += deltaTime;
-            if (this.idleTimer >= 3 && !this.isSpecialIdle) {
+            if (this.idleTimer >= 10 && !this.isSpecialIdle) {
                 this.isSpecialIdle = true;
                 this.animationTime = 0;
             }
@@ -325,18 +325,31 @@ export class PixelCharacter {
         this.sprite.material.map = newTexture;
         this.sprite.customDepthMaterial.map = newTexture;
     }
-    resetToStanding() {
-        if (!this.sprite) return
+resetToStanding() {
+        if (!this.sprite) return;
 
-        // Reset walking animation sequence
-        this.walkSequenceIndex = 0
-        this.walkFrameTimer = 0
+        // アニメーションのタイマーをリセット
+        this.animationTime = 0;
 
-        // Set to default standing texture
-        if (this.defaultTexture) {
-            this.sprite.material.map = this.defaultTexture
-        } else if (this.walkFrames.length > 0) {
-            this.sprite.material.map = this.walkFrames[0] // Use first frame as fallback
+        const currentAnim = this.animations[this.direction];
+
+        // 最終的な向きに対応する立ち絵テクスチャを取得
+        if (currentAnim && currentAnim.frames.length > 0) {
+            // 各方向のアニメーションの最初のフレームを立ち絵とする
+            const standingTexture = currentAnim.frames[0];
+            
+            // 見た目用のマテリアルを更新
+            this.sprite.material.map = standingTexture;
+
+            // 影の形も忘れずに更新する
+            // customDepthMaterialを使っている場合
+            if (this.sprite.customDepthMaterial) {
+                this.sprite.customDepthMaterial.map = standingTexture;
+            }
+            // shadowCasterを使っている場合
+            if (this.shadowCaster) {
+                this.shadowCaster.material.alphaMap = standingTexture;
+            }
         }
     }
 
