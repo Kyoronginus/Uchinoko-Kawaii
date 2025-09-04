@@ -99,17 +99,17 @@ export class ModelManager {
                 },
                 // Signposts - very high mass, effectively immovable
                 {
-                    modelPath: '/signpost_compressed.glb',
-                    screenshotPath: '/project_ss/oc_2.png',
-                    position: new THREE.Vector3(10, 0, 5),
-                    rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
-                    scale: new THREE.Vector3(2, 2, 2),
-                    type: 'signpost',
-                    enableCollision: true,
-                    enablePhysics: true,
-                    mass: 10000, // Very high mass = effectively immovable
-                    friction: 0.8,
-                    physicsShape: 'box',
+                    // modelPath: '/signpost_compressed.glb',
+                    // screenshotPath: '/project_ss/oc_2.png',
+                    // position: new THREE.Vector3(10, 0, 5),
+                    // rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
+                    // scale: new THREE.Vector3(2, 2, 2),
+                    // type: 'signpost',
+                    // enableCollision: true,
+                    // enablePhysics: true,
+                    // mass: 10000, // Very high mass = effectively immovable
+                    // friction: 0.8,
+                    // physicsShape: 'box',
                     // Signpost-specific properties
                     // zoneWidth: 4,
                     // zoneDepth: 4,
@@ -121,7 +121,7 @@ export class ModelManager {
                     screenshotPath: '/project_ss/header.png',
                     position: new THREE.Vector3(-10, 0, 5),
                     rotation: new THREE.Euler(0, 3 * Math.PI / 2, 0),
-                    scale: new THREE.Vector3(2, 2, 2),
+                    scale: new THREE.Vector3(1.5, 1.5, 1.5),
                     type: 'signpost',
                     enableCollision: true,
                     enablePhysics: true,
@@ -129,10 +129,10 @@ export class ModelManager {
                     friction: 0.8,
                     physicsShape: 'box',
                     // Signpost-specific properties
-                    // zoneWidth: 4,
-                    // zoneDepth: 4,
-                    // url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
-                    // name: 'Visit Fibonacci Detection'
+                    zoneWidth: 4,
+                    zoneDepth: 4,
+                    url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
+                    name: 'Visit Fibonacci Detection'
                 },
 
                 // WASD
@@ -732,7 +732,13 @@ export class ModelManager {
      * Initialize and load all models
      */
     async loadAllModels() {
-        const allItems = [...this.items, ...this.gallery_items, ...this.creator_items];
+        // Filter out any misconfigured items without a valid modelPath
+        const allItemsRaw = [...this.items, ...this.gallery_items, ...this.creator_items];
+        const allItems = allItemsRaw.filter(it => it && typeof it.modelPath === 'string' && it.modelPath.length > 0)
+        const skipped = allItemsRaw.length - allItems.length
+        if (skipped > 0) {
+            console.warn(`Skipping ${skipped} item(s) without a valid modelPath`)
+        }
         const loadPromises = allItems.map(item => this.loadModel(item));
         try {
             await Promise.all(loadPromises);
