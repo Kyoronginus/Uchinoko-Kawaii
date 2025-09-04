@@ -686,8 +686,8 @@ export class ModelManager {
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
-                zoneWidth: 1,
-                zoneDepth: 1,
+                zoneWidth: 4,
+                zoneDepth: 4,
                 url: 'https://www.patreon.com/c/Kyoronginus',
                 name: 'Patreon'
             },
@@ -710,8 +710,8 @@ export class ModelManager {
             },
             {
                 modelPath: '/social_media_pixiv.glb',
-                position: new THREE.Vector3(-26, 0, -10),
-                rotation: new THREE.Euler(0, 2.6 * Math.PI / 2, 0),
+                position: new THREE.Vector3(-26, 0, -7),
+                rotation: new THREE.Euler(0, 3.1 * Math.PI / 2, 0),
                 scale: new THREE.Vector3(0.8, 0.8, 0.8),
                 type: 'statue',
                 enableCollision: true,
@@ -720,7 +720,7 @@ export class ModelManager {
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
-                zoneWidth: 2,
+                zoneWidth: 4,
                 zoneDepth: 2,
                 url: 'https://www.pixiv.net/users/34124210',
                 name: 'pixiv'
