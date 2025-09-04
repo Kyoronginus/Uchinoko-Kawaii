@@ -218,11 +218,22 @@ function setupCreatorText() {
             outlineWidth: 2,
             scale: 2
         }
-    )
+    ),
+        environmentManager.addFloorText('Visit my other projects',
+            { x: -20, z: -2 },
+            {
+                font: '10px Silkscreen',
+                color: '#FFFFFF',
+                outline: false,
+                outlineColor: '#000000',
+                outlineWidth: 2,
+                scale: 2
+            }
+        )
 }
 
 function setupGalleryText() {
-        environmentManager.addFloorText('2024-2025',
+    environmentManager.addFloorText('2024-2025',
         { x: 14, z: -15 },
         {
             font: '10px Silkscreen',
