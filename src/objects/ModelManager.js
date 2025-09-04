@@ -741,6 +741,23 @@ export class ModelManager {
                 zoneDepth: 2,
                 url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
                 name: 'Fibonacci Spiral Detection'
+            }, 
+            {
+                modelPath: '/social_media_placeholder.glb',
+                position: new THREE.Vector3(-18, 0, 1),
+                rotation: new THREE.Euler(0, 3.1 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(1.5, 1.5, 1.5),
+                type: 'statue',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 10,
+                friction: 0.8,
+                physicsShape: 'box',
+                // Statue-specific zone properties (same as signpost)
+                zoneWidth: 4,
+                zoneDepth: 2,
+                url: 'https://coloranalyzer-648561351861.us-central1.run.app/',
+                name: 'Color Analyzer'
             },
         ]
     }
