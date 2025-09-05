@@ -131,8 +131,8 @@ export class ModelManager {
                 // Signpost-specific properties
                 zoneWidth: 4,
                 zoneDepth: 4,
-                url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
-                name: 'Visit Fibonacci Detection'
+                // url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
+                name: 'Hi!'
             },
 
             // WASD
@@ -741,7 +741,7 @@ export class ModelManager {
                 zoneDepth: 2,
                 url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
                 name: 'Fibonacci Spiral Detection'
-            }, 
+            },
             {
                 modelPath: '/social_media_placeholder.glb',
                 position: new THREE.Vector3(-18, 0, 1),
@@ -760,6 +760,107 @@ export class ModelManager {
                 name: 'Color Analyzer'
             },
         ]
+
+        this.playground_items = [
+            {
+                modelPath: 'ball.glb',
+                position: new THREE.Vector3(20, 0.3, 3),
+                rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+                type: 'screen',
+                screenshotPath: '/venna_art/Illustration15.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 3,
+                friction: 1,
+                physicsShape: 'sphere',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'foundation.glb',
+                position: new THREE.Vector3(10, 0.3, 3),
+                rotation: new THREE.Euler(0, -0.13 * Math.PI, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+                type: 'screen',
+                screenshotPath: '/venna_art/Illustration15.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.01,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(11, 0.3, 2),
+                rotation: new THREE.Euler(0, -0.5 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(3, 1, 1),
+                type: 'screen',
+                screenshotPath: '/venna_art/Illustration15.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(11, 1, 2),
+                rotation: new THREE.Euler(0, -0.5 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(2.3, 1, 1),
+                type: 'screen',
+                screenshotPath: '/venna_art/Illustration15.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(10.9, 2, 2),
+                rotation: new THREE.Euler(0, -0.56 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(1.7, 1, 1),
+                type: 'screen',
+                screenshotPath: '/venna_art/Illustration15.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(10.9, 3, 2),
+                rotation: new THREE.Euler(0, -0.49 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(1.7, 1, 1),
+                type: 'screen',
+                screenshotPath: '/venna_art/Illustration15.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(12, 0.3, 3),
+                rotation: new THREE.Euler(0, 0.49 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(1.4, 1, 1),
+                type: 'screen',
+                // screenshotPath: '/venna_art/Illustration15.png',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+        ]
     }
 
     /**
@@ -767,7 +868,7 @@ export class ModelManager {
      */
     async loadAllModels() {
         // Filter out any misconfigured items without a valid modelPath
-        const allItemsRaw = [...this.items, ...this.gallery_items, ...this.creator_items];
+        const allItemsRaw = [...this.items, ...this.gallery_items, ...this.creator_items, ...this.playground_items];
         const allItems = allItemsRaw.filter(it => it && typeof it.modelPath === 'string' && it.modelPath.length > 0)
         const skipped = allItemsRaw.length - allItems.length
         if (skipped > 0) {
