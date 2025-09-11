@@ -775,23 +775,12 @@ export class ModelManager {
                 physicsShape: 'sphere',
                 interactionCallback: null
             },
-            // {
-            //     modelPath: 'foundation.glb',
-            //     position: new THREE.Vector3(10, 0.3, 3),
-            //     rotation: new THREE.Euler(0, -0.13 * Math.PI, 0),
-            //     scale: new THREE.Vector3(1, 1, 1),
-            //     type: 'box',
-            //     enableCollision: true,
-            //     enablePhysics: true,
-            //     mass: 30,
-            //     friction: 0.01,
-            //     physicsShape: 'box',
-            //     interactionCallback: null
-            // },
+
+            // acrylic 1
             {
                 modelPath: 'acrylic_stand_2025_alt.glb',
                 position: new THREE.Vector3(10.5, 0.3, 2.5),
-                rotation: new THREE.Euler( -0.11 * Math.PI/2, -0.15 * Math.PI, -0.11 * Math.PI/2),
+                rotation: new THREE.Euler(-0.11 * Math.PI / 2, -0.15 * Math.PI, -0.11 * Math.PI / 2),
                 scale: new THREE.Vector3(1, 1, 1),
                 type: 'box',
                 enableCollision: true,
@@ -856,6 +845,85 @@ export class ModelManager {
             {
                 modelPath: 'beveled_cube.glb',
                 position: new THREE.Vector3(12, 0.3, 3),
+                rotation: new THREE.Euler(0, 0.49 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(1.4, 1, 1),
+                type: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            //acrylic 2
+            {
+                modelPath: 'foundation.glb',
+                position: new THREE.Vector3(16.2, 0.3, 2.7),
+                rotation: new THREE.Euler(0, -0.18 * Math.PI, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+                type: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.01,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(17, 0.3, 2),
+                rotation: new THREE.Euler(0, -0.5 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(3, 1, 1),
+                type: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(17, 1, 2),
+                rotation: new THREE.Euler(0, -0.5 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(2.3, 1, 1),
+                type: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(16.9, 2, 2),
+                rotation: new THREE.Euler(0, -0.56 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(1.7, 1, 1),
+                type: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(16.9, 3, 2),
+                rotation: new THREE.Euler(0, -0.49 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(1.7, 1, 1),
+                type: 'box',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 30,
+                friction: 0.8,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'beveled_cube.glb',
+                position: new THREE.Vector3(18, 0.3, 3),
                 rotation: new THREE.Euler(0, 0.49 / 2 * Math.PI, 0),
                 scale: new THREE.Vector3(1.4, 1, 1),
                 type: 'box',
