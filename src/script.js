@@ -233,6 +233,17 @@ function setupCreatorText() {
 }
 
 function setupGalleryText() {
+    environmentManager.addFloorText('2023-2024',
+        { x: 14, z: -25 },
+        {
+            font: '10px Silkscreen',
+            color: '#FFFFFF',
+            outline: false,
+            outlineColor: '#000000',
+            outlineWidth: 2,
+            scale: 2
+        }
+    )
     environmentManager.addFloorText('2024-2025',
         { x: 14, z: -15 },
         {
