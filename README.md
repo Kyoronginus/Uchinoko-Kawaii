@@ -4,14 +4,14 @@ This project is an interactive website built to showcase the charm of my Origina
 
 <img width="1915" height="940" alt="image" src="https://github.com/user-attachments/assets/c4a6d58f-3bad-43e4-9fb5-f5acda373009" />
 
-**Live Demo**: https://uchinokokawaii.netlify.app/ (Currently in development)
+**Live Demo**: https://uchinokokawaii.netlify.app/
 
 **Tech Stack & Skills**
 This project showcases a wide range of skills in web development, 3D graphics, and digital art.
 
 **Web & JavaScript**
 HTML5 / CSS3: Structuring the application and styling the UI, including the loading screen and interactive elements.
-JavaScript: Writing clean, modern, and modular code using Classes, ES Modules, and async/await for handling asynchronous asset loading.
+JavaScript: Writing clean, modern, and modular code using Classes, ES Modules, and async/await for handling asynchronous asset loading. Additional technologies such as draco-compression extraction and the usage of .webp to shorten the page loading time are applied.
 Vite: Utilizing a modern build tool for a fast and efficient development workflow and optimized production builds.
 
 **3D Graphics & Rendering**
@@ -20,7 +20,7 @@ GLSL: Writing custom shaders for post-processing effects and unique material pro
 cannon-es: Implementing a 3D physics engine to create a dynamic and interactive world with realistic collisions and forces.
 
 **Art & Asset Pipeline**
-Blender: Modeling, UV unwrapping, and exporting 3D assets (.glb) for the environment and interactive objects.
+Blender: Modeling, UV unwrapping, draco compression, and exporting 3D assets (.glb) for the environment and interactive objects.
 Pixel Art: Designing and creating animated 2D character sprites using Clip Studio Paint PRO.
 
 **Deployment & Workflow**
