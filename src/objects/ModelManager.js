@@ -129,10 +129,10 @@ export class ModelManager {
                 friction: 0.8,
                 physicsShape: 'box',
                 // Signpost-specific properties
-                zoneWidth: 4,
-                zoneDepth: 4,
+                // zoneWidth: 4,
+                // zoneDepth: 4,
                 // url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
-                name: 'Hi!'
+                // name: 'Hi!'
             },
 
             // WASD
@@ -631,6 +631,20 @@ export class ModelManager {
                 scale: new THREE.Vector3(2.5, 2.5, 2.5),
                 type: 'screen',
                 screenshotPath: 'venna_art/Illustration191.webp',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 300,
+                friction: 0.6,
+                physicsShape: 'box',
+                interactionCallback: null
+            },
+            {
+                modelPath: 'board_A4_portrait.glb',
+                position: new THREE.Vector3(20, -0.3, -35),
+                rotation: new THREE.Euler(0, 2 / 2 * Math.PI, 0),
+                scale: new THREE.Vector3(2.5, 2.5, 2.5),
+                type: 'screen',
+                screenshotPath: 'venna_art/Illustration49.webp',
                 enableCollision: true,
                 enablePhysics: true,
                 mass: 300,
