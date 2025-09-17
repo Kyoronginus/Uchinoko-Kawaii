@@ -194,6 +194,17 @@ function setupExampleText() {
             scale: 2
         }
     )
+
+    environmentManager.addFloorText('Press    to reset position',
+        { x: 0, z: 14 },
+        {
+            font: '10px Silkscreen',
+            color: '#ffffffff',
+            // outline: true,
+            outlineColor: '#ffffffff',
+            scale: 2
+        }
+    )
 }
 
 function setupCreatorText() {

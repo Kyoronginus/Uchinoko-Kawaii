@@ -20,7 +20,7 @@ export class LightingManager {
                     mapSize: { width: 1024, height: 1024 }, // Higher resolution for crisp shadows
                     camera: {
                         near: 0.1,
-                        far: 100, // farの値も必要に応じて調整
+                        far: 120, // farの値も必要に応じて調整
                         left: -250,
                         right: 250,
                         top: 250,

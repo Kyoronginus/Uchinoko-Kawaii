@@ -183,7 +183,20 @@ export class ModelManager {
                 physicsShape: 'sphere',
                 mass: 0.3,
                 interactionCallback: null, // Will be set during loading
+            }, {
+                modelPath: '/letters_3D/R.glb',
+                position: new THREE.Vector3(-2.7, 0, 14.1),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1.3, 1.3, 1.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'sphere',
+                mass: 0.3,
+                interactionCallback: null, // Will be set during loading
             },
+
+
             //beveled_cube
             {
                 modelPath: '/beveled_cube.glb',
@@ -764,7 +777,7 @@ export class ModelManager {
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 10,
+                mass: 1000,
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
