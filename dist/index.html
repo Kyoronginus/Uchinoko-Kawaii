@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio</title>
+    <title>OC Kawaii</title>
 
     <!-- Load Silkscreen font from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,7 +51,7 @@
             width: 100%;
             height: 100%;
             /* 紫からピンクがかった黄色へのグラデーション */
-            background: linear-gradient(to bottom, #a881e3, #f5d7b5);
+            background: linear-gradient(to bottom, #ffffff, #b5ebf5);
             z-index: -1;
             /* canvasの背面に配置 */
         }
@@ -115,7 +115,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #f5d7b5;
+            background-color: #b5eef5;
             /* 背景色 */
             display: flex;
             justify-content: center;
@@ -138,19 +138,28 @@
         #progress-bar-fill {
             width: 0%;
             height: 100%;
-            background-color: #a881e3;
+            background-color: #9698ff;
             transition: width 0.5s ease;
         }
 
+        .start-button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            /* Add some space above the button */
+        }
+
         #start-button {
-            padding: 10px 20px;
+            padding: 20px 40px;
+            border: none;
             font-family: 'Silkscreen', monospace;
+            font-size: 1.5em;
             display: none;
             /* 最初は非表示 */
             cursor: pointer;
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-B0XPQ4gZ.js"></script>
+  <script type="module" crossorigin src="/assets/index-cR8EcwRL.js"></script>
 </head>
 
 <body>
@@ -160,7 +169,9 @@
             <div id="progress-bar">
                 <div id="progress-bar-fill"></div>
             </div>
-            <button id="start-button">START</button>
+            <div class="start-button-container">
+                <button id="start-button">START</button>
+            </div>
         </div>
     </div>
     <!-- Font preload element to ensure Silkscreen is available -->
@@ -173,7 +184,7 @@
     <div class="controls">
         <div>WASD: Move character</div>
         <div>R: Reset character position</div>
-        <div>Simping my OC frfr</div>
+        <!-- <div>Simping my OC frfr</div> -->
     </div>
     <div id="project-link-container" class="hidden">
         <a href="#" target="_blank" rel="noopener noreferrer"></a>

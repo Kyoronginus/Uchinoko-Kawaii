@@ -255,8 +255,8 @@ export class ModelManager {
                 enableCollision: true,
                 enablePhysics: true,
                 physicsShape: 'mesh',
-                mass: 3,
-                friction: 0.0001,
+                mass: 10,
+                friction: 0.001,
                 interactionCallback: null, // Will be set during sloading
             },
 

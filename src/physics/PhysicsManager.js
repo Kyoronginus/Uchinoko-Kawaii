@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
+import { ConvexHull } from 'three/examples/jsm/math/ConvexHull.js'
 
 export class PhysicsManager {
     constructor() {
@@ -66,8 +67,8 @@ export class PhysicsManager {
             object3d.updateWorldMatrix(true, true)
             object3d.traverse((child) => {
                 if (!child.isMesh || !child.geometry) return
-                let geom = child.geometry
-                let posAttr = geom.attributes && geom.attributes.position
+                const geom = child.geometry
+                const posAttr = geom.attributes && geom.attributes.position
                 if (!posAttr) return
 
                 // Compute transform from child local into root local
@@ -102,6 +103,63 @@ export class PhysicsManager {
             return new CANNON.Trimesh(new Float32Array(vertices), indexArray)
         }
 
+        // Build a ConvexPolyhedron from a THREE.Object3D hierarchy (convex hull collider)
+        createConvexHullShapeFromObject(object3d) {
+            const points = []
+            const rootInv = new THREE.Matrix4().copy(object3d.matrixWorld).invert()
+            const temp = new THREE.Matrix4()
+
+            object3d.updateWorldMatrix(true, true)
+            object3d.traverse((child) => {
+                if (!child.isMesh || !child.geometry) return
+                const geom = child.geometry
+                const posAttr = geom.attributes && geom.attributes.position
+                if (!posAttr) return
+
+                temp.multiplyMatrices(rootInv, child.matrixWorld)
+                for (let i = 0; i < posAttr.count; i++) {
+                    const v = new THREE.Vector3(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i)).applyMatrix4(temp)
+                    points.push(v)
+                }
+            })
+
+            if (points.length === 0) {
+                return new CANNON.Box(new CANNON.Vec3(0.01, 0.01, 0.01))
+            }
+
+            const hull = new ConvexHull().setFromPoints(points)
+
+            // Collect unique vertices and faces from the hull
+            const cannonVertices = []
+            const vertexIndexMap = new Map()
+            const faces = []
+
+            for (const face of hull.faces) {
+                const faceIndices = []
+                let edge = face.edge
+                do {
+                    const headPoint = edge.head().point
+                    const key = headPoint.x + ',' + headPoint.y + ',' + headPoint.z
+                    let idx = vertexIndexMap.get(key)
+                    if (idx === undefined) {
+                        idx = cannonVertices.length
+                        vertexIndexMap.set(key, idx)
+                        cannonVertices.push(new CANNON.Vec3(headPoint.x, headPoint.y, headPoint.z))
+                    }
+                    faceIndices.push(idx)
+                    edge = edge.next
+                } while (edge !== face.edge)
+                if (faceIndices.length >= 3) faces.push(faceIndices)
+            }
+
+            if (cannonVertices.length < 4 || faces.length === 0) {
+                // Not enough data to build a convex polyhedron
+                return new CANNON.Box(new CANNON.Vec3(0.01, 0.01, 0.01))
+            }
+
+            return new CANNON.ConvexPolyhedron({ vertices: cannonVertices, faces })
+        }
+
 
     // src/physics/PhysicsManager.js
 
@@ -132,12 +190,18 @@ export class PhysicsManager {
         mesh.updateWorldMatrix(true, true);
 
         // 4. 'shape'オプションに応じて、正しい当たり判定の形状を作成
+        // 注意: Cannon-ES は Box vs Trimesh の衝突が未実装。
+        // → 静的(static)は Trimesh を使って高精度、動的(dynamic)は ConvexHull を使って安定な衝突を実現します。
         let cannonShape;
         if (shape === 'sphere') {
             const radius = Math.max(size.x, size.y, size.z) / 2;
             cannonShape = new CANNON.Sphere(radius);
-        } else if (shape === 'mesh' || shape === 'trimesh') {
-            cannonShape = this.createTrimeshShapeFromObject(mesh)
+        } else if (shape === 'mesh' || shape === 'trimesh' || shape === 'convex' || shape === 'hull') {
+            if (type === 'static') {
+                cannonShape = this.createTrimeshShapeFromObject(mesh)
+            } else {
+                cannonShape = this.createConvexHullShapeFromObject(mesh)
+            }
         } else { // default to 'box'
             const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
             cannonShape = new CANNON.Box(halfExtents);
