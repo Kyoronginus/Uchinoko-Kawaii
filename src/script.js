@@ -324,6 +324,12 @@ function animate() {
     }
 
     // Step physics and sync meshes
+
+    // Apply character repulsion bubble after stepping if available
+    if (physicsManager.applyCharacterRepulsion && character.physicsBody) {
+        physicsManager.applyCharacterRepulsion(character.physicsBody)
+    }
+
     physicsManager.step(deltaTime)
 
     // Sync character position from physics

@@ -20,6 +20,20 @@ export class PhysicsManager {
         this.bodyToMesh = new Map()
         this.meshToBody = new Map()
 
+        // Character repulsion ("personal space bubble") defaults
+        this.characterRepulsion = {
+            enabled: true,
+            detectionScale: 1.01,     // detection radius = scale * character sphere radius
+            strength: 0.8,           // push factor (larger = stronger)
+            activationSpeed: 0.6,    // only apply when character horizontal speed is below this
+            horizontalOnly: true,    // push in XZ plane only
+            maxPushPerStep: 1      // clamp push magnitude per frame
+        }
+        // Temp vectors to avoid allocations
+        this._tmpVec3A = new CANNON.Vec3()
+        this._tmpVec3B = new CANNON.Vec3()
+
+
         // Ground plane (optional). Comment out if you have a floor collider from GLB.
         const groundBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: this.defaultMaterial })
         // Rotate plane so it's horizontal (Cannon planes face along +Z by default)
@@ -264,14 +278,74 @@ export class PhysicsManager {
 
         // Sync all meshes with their bodies
         this.bodyToMesh.forEach((mesh, body) => {
-
             mesh.position.set(body.position.x, body.position.y, body.position.z)
-
-            // ✅ If the body is dynamic (mass > 0), sync its rotation
+            // If the body is dynamic (mass > 0), sync its rotation
             if (body.mass > 0) {
                 mesh.quaternion.set(body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w)
             }
         })
+    }
+
+    /**
+     * Apply secondary detection hitbox repulsion for the character sphere.
+     * @param {CANNON.Body} characterBody
+     */
+    applyCharacterRepulsion(characterBody) {
+        if (!this.characterRepulsion || !this.characterRepulsion.enabled || !characterBody) return
+        const shape = characterBody.shapes[0]
+        if (!(shape instanceof CANNON.Sphere)) return
+
+        const radius = shape.radius
+        const bubbleRadius = radius * (this.characterRepulsion.detectionScale || 1.2)
+
+        // Only when moving slowly: compute horizontal speed
+        const vx = characterBody.velocity.x, vz = characterBody.velocity.z
+        const horizontalSpeed = Math.hypot(vx, vz)
+        if (horizontalSpeed > this.characterRepulsion.activationSpeed) return
+
+        const charPos = characterBody.position
+        const tmpA = this._tmpVec3A
+        const tmpB = this._tmpVec3B
+
+        // Check against all other bodies
+        for (const body of this.world.bodies) {
+            if (body === characterBody) continue
+            if (body.mass === 0 && body.shapes.length && body.shapes[0] instanceof CANNON.Plane) continue
+
+            // Approximate body position by its world center of mass
+            const otherPos = body.position
+
+            // Vector from other to character
+            tmpA.set(charPos.x - otherPos.x, charPos.y - otherPos.y, charPos.z - otherPos.z)
+            let dist = tmpA.length()
+            if (dist === 0) dist = 0.0001
+
+            // Estimate other body's "radius" for detection.
+            // Use its bounding radius if available, else a minimal value.
+            const otherRadius = body.boundingRadius || 0.5
+            const detectionDistance = bubbleRadius + otherRadius
+
+            // If inside detection bubble, push out proportionally to penetration
+            const penetration = detectionDistance - dist
+            if (penetration > 0) {
+                // Normalized push direction
+                tmpA.scale(1 / dist, tmpA)
+                if (this.characterRepulsion.horizontalOnly) {
+                    // remove vertical component
+                    tmpA.y = 0
+                    const lenXZ = Math.hypot(tmpA.x, tmpA.z) || 1e-4
+                    tmpA.x /= lenXZ; tmpA.z /= lenXZ
+                }
+                // Push magnitude proportionate to penetration
+                const pushMag = Math.min(this.characterRepulsion.strength * penetration, this.characterRepulsion.maxPushPerStep)
+                tmpB.set(tmpA.x * pushMag, tmpA.y * pushMag, tmpA.z * pushMag)
+
+                // Apply as a small velocity adjustment (gentle nudge)
+                characterBody.velocity.x += tmpB.x
+                characterBody.velocity.y += tmpB.y
+                characterBody.velocity.z += tmpB.z
+            }
+        }
     }
 }
 
