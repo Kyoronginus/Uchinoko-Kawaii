@@ -74,9 +74,10 @@ export class PhysicsManager {
                 // Compute transform from child local into root local
                 temp.multiplyMatrices(rootInv, child.matrixWorld)
 
-                // Push transformed vertices
+                // Push transformed vertices (respect root scale)
                 for (let i = 0; i < posAttr.count; i++) {
                     const v = new THREE.Vector3(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i)).applyMatrix4(temp)
+                    v.multiply(object3d.scale)
                     vertices.push(v.x, v.y, v.z)
                 }
 
@@ -119,6 +120,7 @@ export class PhysicsManager {
                 temp.multiplyMatrices(rootInv, child.matrixWorld)
                 for (let i = 0; i < posAttr.count; i++) {
                     const v = new THREE.Vector3(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i)).applyMatrix4(temp)
+                    v.multiply(object3d.scale)
                     points.push(v)
                 }
             })
@@ -193,9 +195,10 @@ export class PhysicsManager {
         // 注意: Cannon-ES は Box vs Trimesh の衝突が未実装。
         // → 静的(static)は Trimesh を使って高精度、動的(dynamic)は ConvexHull を使って安定な衝突を実現します。
         let cannonShape;
+        let sphereRadius = 0;
         if (shape === 'sphere') {
-            const radius = Math.max(size.x, size.y, size.z) / 2;
-            cannonShape = new CANNON.Sphere(radius);
+            sphereRadius = Math.max(size.x, size.y, size.z) / 2;
+            cannonShape = new CANNON.Sphere(sphereRadius);
         } else if (shape === 'mesh' || shape === 'trimesh' || shape === 'convex' || shape === 'hull') {
             if (type === 'static') {
                 cannonShape = this.createTrimeshShapeFromObject(mesh)
@@ -203,8 +206,8 @@ export class PhysicsManager {
                 cannonShape = this.createConvexHullShapeFromObject(mesh)
             }
         } else { // default to 'box'
-            const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
-            cannonShape = new CANNON.Box(halfExtents);
+            const halfExtentsBox = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
+            cannonShape = new CANNON.Box(halfExtentsBox);
         }
         // ★★★★★ ここまで ★★★★★
 
@@ -220,8 +223,12 @@ export class PhysicsManager {
         body.position.copy(mesh.position);
         body.quaternion.copy(mesh.quaternion); // ✅ 回転を直接コピー
 
-        // 基点が中心にあるモデルを前提に、Y位置を補正
-        body.position.y += halfExtents.y;
+        // 位置補正: Box/Sphere のみ底面が地面に乗るようにYを補正。Mesh/Trimesh/Convexは補正しない（形状が実寸で一致）。
+        if (shape === 'sphere') {
+            body.position.y += sphereRadius;
+        } else if (shape === 'box') {
+            body.position.y += halfExtents.y;
+        }
 
         body.linearDamping = linearDamping;
         body.angularDamping = angularDamping;
