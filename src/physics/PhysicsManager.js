@@ -55,6 +55,54 @@ export class PhysicsManager {
         return { shape, center }
     }
 
+        // Build a Cannon.Trimesh from a THREE.Object3D hierarchy (accurate collider)
+        createTrimeshShapeFromObject(object3d) {
+            const vertices = []
+            const indices = []
+            const rootInv = new THREE.Matrix4().copy(object3d.matrixWorld).invert()
+            const temp = new THREE.Matrix4()
+            let vertexOffset = 0
+
+            object3d.updateWorldMatrix(true, true)
+            object3d.traverse((child) => {
+                if (!child.isMesh || !child.geometry) return
+                let geom = child.geometry
+                let posAttr = geom.attributes && geom.attributes.position
+                if (!posAttr) return
+
+                // Compute transform from child local into root local
+                temp.multiplyMatrices(rootInv, child.matrixWorld)
+
+                // Push transformed vertices
+                for (let i = 0; i < posAttr.count; i++) {
+                    const v = new THREE.Vector3(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i)).applyMatrix4(temp)
+                    vertices.push(v.x, v.y, v.z)
+                }
+
+                // Use indices if available, otherwise assume non-indexed triangles
+                if (geom.index) {
+                    const idx = geom.index.array
+                    for (let i = 0; i < idx.length; i++) {
+                        indices.push(idx[i] + vertexOffset)
+                    }
+                } else {
+                    for (let i = 0; i < posAttr.count; i++) {
+                        indices.push(vertexOffset + i)
+                    }
+                }
+                vertexOffset += posAttr.count
+            })
+
+            if (vertices.length === 0 || indices.length === 0) {
+                // Fallback tiny box if no geometry
+                return new CANNON.Box(new CANNON.Vec3(0.01, 0.01, 0.01))
+            }
+
+            const indexArray = (vertices.length / 3) < 65535 ? new Uint16Array(indices) : new Uint32Array(indices)
+            return new CANNON.Trimesh(new Float32Array(vertices), indexArray)
+        }
+
+
     // src/physics/PhysicsManager.js
 
     addBodyForMesh(mesh, options = {}) {
@@ -88,6 +136,8 @@ export class PhysicsManager {
         if (shape === 'sphere') {
             const radius = Math.max(size.x, size.y, size.z) / 2;
             cannonShape = new CANNON.Sphere(radius);
+        } else if (shape === 'mesh' || shape === 'trimesh') {
+            cannonShape = this.createTrimeshShapeFromObject(mesh)
         } else { // default to 'box'
             const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
             cannonShape = new CANNON.Box(halfExtents);

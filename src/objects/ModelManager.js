@@ -246,6 +246,20 @@ export class ModelManager {
                 mass: 3,
                 interactionCallback: null, // Will be set during sloading
             },
+            {
+                modelPath: '/triangle.glb',
+                position: new THREE.Vector3(-5, 2.11, 10),
+                rotation: new THREE.Euler(0, 7 * Math.PI / 5, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'mesh',
+                mass: 3,
+                friction: 0.0001,
+                interactionCallback: null, // Will be set during sloading
+            },
+
             //foundation_acrylic_stand
             {
                 modelPath: '/foundation_chibi_acrylic_stand.glb',
