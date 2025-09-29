@@ -248,7 +248,7 @@ export class ModelManager {
             },
             {
                 modelPath: '/triangle.glb',
-                position: new THREE.Vector3(-5, 2.11, 10),
+                position: new THREE.Vector3(-8, 2.11, 14),
                 rotation: new THREE.Euler(0, 7 * Math.PI / 5, 0),
                 scale: new THREE.Vector3(1, 1, 1),
                 type: 'untextured',
@@ -257,6 +257,19 @@ export class ModelManager {
                 physicsShape: 'mesh',
                 mass: 10,
                 friction: 0.001,
+                interactionCallback: null, // Will be set during sloading
+            },
+            {
+                modelPath: '/triangle.glb',
+                position: new THREE.Vector3(15, 2.11, 10),
+                rotation: new THREE.Euler(-7 * Math.PI / 5, -7 * Math.PI / 5, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'mesh',
+                mass: 10,
+                friction: 0.01,
                 interactionCallback: null, // Will be set during sloading
             },
 
