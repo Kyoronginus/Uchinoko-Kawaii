@@ -1012,8 +1012,9 @@ export class ModelManager {
                 type: 'box',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 2,
-                friction: 0.001,
+                mass: 0.3,
+                friction: 1,
+                restitution: 1,
                 physicsShape: 'sphere',
                 interactionCallback: null
             },
@@ -1026,7 +1027,7 @@ export class ModelManager {
                 enableCollision: true,
                 enablePhysics: true,
                 mass: 2,
-                friction: 0.001,
+                friction: 1,
                 physicsShape: 'box',
                 interactionCallback: null
             },
@@ -1078,6 +1079,7 @@ export class ModelManager {
                 enablePhysics: true,
                 mass: 2,
                 friction: 1,
+                restitution: 1,
                 physicsShape: 'box',
                 interactionCallback: null
             },
