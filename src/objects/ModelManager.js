@@ -194,6 +194,17 @@ export class ModelManager {
                 physicsShape: 'sphere',
                 mass: 0.3,
                 interactionCallback: null, // Will be set during loading
+            },{
+                modelPath: '/letters_3D/G.glb',
+                position: new THREE.Vector3(-3.1, 0, 16.2),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1.3, 1.3, 1.3),
+                type: 'untextured',
+                enableCollision: true,
+                enablePhysics: true,
+                physicsShape: 'sphere',
+                mass: 0.3,
+                interactionCallback: null, // Will be set during loading
             },
 
 

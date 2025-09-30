@@ -240,6 +240,17 @@ function setupExampleText() {
             scale: 2
         }
     )
+    
+    environmentManager.addFloorText('Use    to grab objects',
+        { x: 0, z: 16 },
+        {
+            font: '10px Silkscreen',
+            color: '#ffffffff',
+            // outline: true,
+            outlineColor: '#ffffffff',
+            scale: 2
+        }
+    )
 }
 
 function setupCreatorText() {
