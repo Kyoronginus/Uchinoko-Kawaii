@@ -44,10 +44,11 @@ export class ProximityInteractionManager {
         this.logInteractiveObjects()
         
         this.setupUI()
-        
-        if (this.scene && this.showVisualizers) {
-            this.createVisualizers()
-        }
+
+        // Visualizers disabled - no zone indicators will be shown
+        // if (this.scene && this.showVisualizers) {
+        //     this.createVisualizers()
+        // }
     }
     
     /**
@@ -170,21 +171,45 @@ export class ProximityInteractionManager {
     /**
      * Update proximity detection based on character position
      * Call this every frame with the current character position
-     * 
+     *
      * @param {THREE.Vector3} characterPosition - Current character position
      */
     update(characterPosition) {
         this._frameCount++
-        
+
         // Find nearest interactive object within range
         let nearestObject = null
         let nearestDistance = Infinity
-        
+
         // Debug logging (occasional)
         if (this._frameCount % 60 === 0) {
             console.log(`[Proximity] Character at (${characterPosition.x.toFixed(1)}, ${characterPosition.z.toFixed(1)}) | Checking ${this.interactiveObjects.length} objects`)
         }
-        
+
+        // ⭐ HARDCODED GITHUB PROXIMITY CHECK ⭐
+        // Special case for GitHub model at position (-14, 0, -7)
+        const githubPosition = new THREE.Vector2(-14, -7)
+        const charPos2D = new THREE.Vector2(characterPosition.x, characterPosition.z)
+        const distanceToGithub = charPos2D.distanceTo(githubPosition)
+        const githubInteractionDistance = 1.5
+
+        if (distanceToGithub < githubInteractionDistance) {
+            const githubObject = {
+                name: 'Github',
+                url: 'https://github.com/Kyoronginus'
+            }
+
+            if (this._frameCount % 30 === 0) {
+                console.log(`[Proximity] 🔧 HARDCODED GitHub check: distance ${distanceToGithub.toFixed(2)} units`)
+            }
+
+            // If this is the nearest, use it
+            if (distanceToGithub < nearestDistance) {
+                nearestDistance = distanceToGithub
+                nearestObject = githubObject
+            }
+        }
+
         for (const entry of this.interactiveObjects) {
             const item = entry.item
             const mesh = entry.mesh
@@ -326,11 +351,11 @@ export class ProximityInteractionManager {
             }
         }
         
-        // Recreate visualizers if enabled
-        if (this.scene && this.showVisualizers) {
-            this.removeVisualizers()
-            this.createVisualizers()
-        }
+        // Visualizers disabled
+        // if (this.scene && this.showVisualizers) {
+        //     this.removeVisualizers()
+        //     this.createVisualizers()
+        // }
         
         console.log('Updated interactive objects list:', newObjects.length, 'objects')
     }
@@ -341,28 +366,30 @@ export class ProximityInteractionManager {
      */
     setInteractionDistance(distance) {
         this.interactionDistance = distance
-        
-        // Recreate visualizers with new distance
-        if (this.scene && this.showVisualizers) {
-            this.removeVisualizers()
-            this.createVisualizers()
-        }
-        
+
+        // Visualizers disabled
+        // if (this.scene && this.showVisualizers) {
+        //     this.removeVisualizers()
+        //     this.createVisualizers()
+        // }
+
         console.log('Interaction distance updated to:', distance)
     }
-    
+
     /**
-     * Toggle visualizers on/off
+     * Toggle visualizers on/off (DISABLED - visualizers are permanently off)
      * @param {boolean} show - Whether to show visualizers
      */
     setVisualizersVisible(show) {
-        if (show && !this.showVisualizers) {
-            this.showVisualizers = true
-            this.createVisualizers()
-        } else if (!show && this.showVisualizers) {
-            this.showVisualizers = false
-            this.removeVisualizers()
-        }
+        console.log('Visualizers are permanently disabled')
+        // Visualizers disabled
+        // if (show && !this.showVisualizers) {
+        //     this.showVisualizers = true
+        //     this.createVisualizers()
+        // } else if (!show && this.showVisualizers) {
+        //     this.showVisualizers = false
+        //     this.removeVisualizers()
+        // }
     }
     
     /**

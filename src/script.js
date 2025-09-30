@@ -207,7 +207,7 @@ async function initializeScene() {
 
         proximityManager = new ProximityInteractionManager(interactiveObjects, scene, {
             interactionDistance: 3.5,
-            showVisualizers: true,
+            showVisualizers: false,  // Visualizers disabled
             visualizerColor: 0x00ffff,
             visualizerOpacity: 0.3
         })
