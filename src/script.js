@@ -4,7 +4,7 @@ import { HD2DRenderer } from './rendering/HD2DRenderer.js'
 import { PixelCharacter } from './characters/PixelCharacter.js'
 import { ModelManager } from './objects/ModelManager.js'
 import { LightingManager } from './lighting/LightingManager.js'
-import { ProjectZoneManager } from './interaction/ProjectZoneManager.js'
+import { ProximityInteractionManager } from './interaction/ProximityInteractionManager.js'
 import { EnvironmentManager } from './environment/EnvironmentManager.js'
 import { TextManager } from './environment/TextManager.js';
 import { PhysicsManager } from './physics/PhysicsManager.js'
@@ -152,7 +152,7 @@ character.setPhysicsManager(physicsManager)
 // document.body.appendChild(grabStatusElement)
 const lightingManager = new LightingManager(scene)
 const environmentManager = new EnvironmentManager(scene)
-let projectZoneManager = null
+let proximityManager = null
 
 const textManager = new TextManager(scene);
 textManager.createWelcomeText();
@@ -168,17 +168,49 @@ async function initializeScene() {
         // Load all models (both untextured models and signposts)
         await modelManager.loadAllModels()
 
+        // Debug: Log all loaded models
+        console.log('📦 All loaded models by type:')
+        const allModels = modelManager.models
+        const modelsByType = {}
+        allModels.forEach(entry => {
+            const type = entry.item.type || 'unknown'
+            if (!modelsByType[type]) modelsByType[type] = []
+            modelsByType[type].push(entry.item.name || entry.item.modelPath)
+        })
+        Object.keys(modelsByType).forEach(type => {
+            console.log(`  ${type}: ${modelsByType[type].length} models`)
+            modelsByType[type].forEach(name => console.log(`    - ${name}`))
+        })
+
         // Create character physics body and keep it in sync
         character.physicsBody = physicsManager.addCharacterBody(character.getPosition(), 0.5, 1)
 
         // Set character body reference in physics manager for grab system
         physicsManager.setCharacterBody(character.physicsBody)
 
-        // Initialize project zone manager with loaded signpost and statue models
+        // Initialize proximity interaction manager with loaded signpost and statue models
         const signpostModels = modelManager.getModelsByType('signpost')
         const statueModels = modelManager.getModelsByType('statue')
-        const projectEntries = [...signpostModels, ...statueModels]
-        projectZoneManager = new ProjectZoneManager(projectEntries)
+
+        console.log('🔍 Gathering interactive objects for ProximityInteractionManager:')
+        console.log(`  - Signpost models: ${signpostModels.length}`)
+        signpostModels.forEach((entry, i) => {
+            console.log(`    [${i}] ${entry.item.name} (${entry.item.type}) - has URL: ${!!entry.item.url}`)
+        })
+        console.log(`  - Statue models: ${statueModels.length}`)
+        statueModels.forEach((entry, i) => {
+            console.log(`    [${i}] ${entry.item.name} (${entry.item.type}) - has URL: ${!!entry.item.url}`)
+        })
+
+        const interactiveObjects = [...signpostModels, ...statueModels]
+        console.log(`  - Total interactive objects: ${interactiveObjects.length}`)
+
+        proximityManager = new ProximityInteractionManager(interactiveObjects, scene, {
+            interactionDistance: 3.5,
+            showVisualizers: true,
+            visualizerColor: 0x00ffff,
+            visualizerOpacity: 0.3
+        })
 
         // Add some example floor text
         setupExampleText()
@@ -401,10 +433,10 @@ function animate() {
         character.sprite.position.copy(character.position)
     }
 
-    // Update project zones if manager is initialized
-    if (projectZoneManager) {
+    // Update proximity interactions if manager is initialized
+    if (proximityManager) {
         const charPos = character.getPosition();
-        projectZoneManager.update(charPos);
+        proximityManager.update(charPos);
     }
 
     // Update camera and render

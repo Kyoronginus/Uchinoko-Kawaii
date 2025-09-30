@@ -1,14 +1,40 @@
 import * as THREE from 'three'
 
+/**
+ * @deprecated This class has been replaced by ProximityInteractionManager
+ * Please use ProximityInteractionManager instead for proximity-based URL interactions.
+ * This file is kept for backward compatibility but may be removed in future versions.
+ */
 export class ProjectZoneManager {
-    constructor(projectEntries) {
+    constructor(projectEntries, scene = null) {
+        console.warn('⚠️ ProjectZoneManager is deprecated. Please use ProximityInteractionManager instead.')
         // Expect array of { mesh, item }
         this.projectEntries = projectEntries
         this.activeZone = null
         this.linkContainer = null
         this.linkElement = null
+        this.scene = scene
+        this.zoneVisualizers = [] // Store zone visualizer meshes
+
+        console.log('ProjectZoneManager initialized with', projectEntries.length, 'entries')
+        projectEntries.forEach((entry, i) => {
+            const meshPos = entry.mesh ? `(${entry.mesh.position.x.toFixed(1)}, ${entry.mesh.position.y.toFixed(1)}, ${entry.mesh.position.z.toFixed(1)})` : 'NO MESH'
+            console.log(`  Entry ${i}: ${entry.item.name}`, {
+                configPos: `(${entry.item.position.x}, ${entry.item.position.z})`,
+                meshPos: meshPos,
+                url: entry.item.url,
+                hasMesh: !!entry.mesh,
+                hasUrl: !!entry.item.url,
+                hasName: !!entry.item.name
+            })
+        })
 
         this.setupUI()
+
+        // Add visual indicators if scene is provided
+        if (this.scene) {
+            // this.addZoneVisualizers()
+        }
     }
 
     /**
@@ -26,61 +52,150 @@ export class ProjectZoneManager {
     }
 
     /**
-     * Update interaction zones based on character position
-     * @param {THREE.Vector3} characterPosition - Current character position
+     * Add visual indicators for project zones
+     * Shows circular proximity ranges for distance-based detection
      */
-    update(characterPosition) {
-        let inAnyZone = false
+    addZoneVisualizers() {
+        if (!this.scene) return
+
+        const interactionDistance = 3.5 // Match the distance threshold in update()
 
         for (const entry of this.projectEntries) {
             const project = entry.item
             const mesh = entry.mesh
-            const isInside = this.isCharacterInZone(characterPosition, project, mesh)
 
-            if (isInside) {
-                inAnyZone = true
-                if (this.activeZone !== project) {
-                    this.enterZone(project)
-                }
-                break // Only one zone can be active at a time
-            }
+            if (!mesh || !project.url || !project.name) continue
+
+            // Create a circular ring geometry for the zone indicator
+            const circleGeometry = new THREE.RingGeometry(
+                interactionDistance - 0.1, // Inner radius (slightly smaller for ring effect)
+                interactionDistance,        // Outer radius
+                32                          // Segments for smooth circle
+            )
+
+            const circleMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ffff, // Cyan color for project zones
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.DoubleSide
+            })
+
+            const circleRing = new THREE.Mesh(circleGeometry, circleMaterial)
+
+            // Position the visualizer at the mesh position
+            circleRing.position.copy(mesh.position)
+            circleRing.position.y = 0.05 // Slightly above the floor
+            circleRing.rotation.x = -Math.PI / 2 // Lay flat on ground
+
+            this.scene.add(circleRing)
+            this.zoneVisualizers.push(circleRing)
+
+            // Add a semi-transparent filled circle
+            const fillGeometry = new THREE.CircleGeometry(interactionDistance, 32)
+            const fillMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ffff, // Cyan
+                transparent: true,
+                opacity: 0.1,
+                side: THREE.DoubleSide
+            })
+
+            const fillCircle = new THREE.Mesh(fillGeometry, fillMaterial)
+            fillCircle.position.copy(mesh.position)
+            fillCircle.position.y = 0.04 // Slightly below the ring
+            fillCircle.rotation.x = -Math.PI / 2
+
+            // this.scene.add(fillCircle)s
+            // this.zoneVisualizers.push(fillCircle)
+
+            console.log(`Added circular zone visualizer for ${project.name} at (${mesh.position.x.toFixed(2)}, ${mesh.position.z.toFixed(2)}) with radius ${interactionDistance}`)
         }
 
-        if (!inAnyZone && this.activeZone) {
-            this.exitZone()
-        }
+        console.log(`Created ${this.zoneVisualizers.length} zone visualizers (${this.zoneVisualizers.length / 2} circles)`)
     }
 
     /**
-     * Check if character is inside a project zone
-     * @param {THREE.Vector3} characterPosition - Character position
-     * @param {Object} project - Project configuration with zone properties
-     * @returns {boolean} - True if character is in zone
+     * Remove all zone visualizers from the scene
      */
-    // In src/interaction/ProjectZoneManager.js
+    removeZoneVisualizers() {
+        if (!this.scene) return
 
-    isCharacterInZone(characterPosition, project, signpostMesh) {
-        if (!signpostMesh) return false;
+        for (const visualizer of this.zoneVisualizers) {
+            this.scene.remove(visualizer)
+            if (visualizer.geometry) visualizer.geometry.dispose()
+            if (visualizer.material) visualizer.material.dispose()
+        }
 
-        // Create an inverse matrix of the signpost's world transformation
-        const inverseMatrix = new THREE.Matrix4();
-        inverseMatrix.copy(signpostMesh.matrixWorld).invert();
-
-        // Transform the character's world position into the signpost's local space
-        const localCharPos = characterPosition.clone().applyMatrix4(inverseMatrix);
-
-        const halfWidth = project.zoneWidth / 2;
-        const halfDepth = project.zoneDepth / 2;
-        const zoneDepth = project.zoneDepth;
-
-        // Now, perform a simple AABB check in the signpost's local space
-        return (
-            localCharPos.x > -halfWidth &&
-            localCharPos.x < halfWidth &&
-            localCharPos.z > -zoneDepth &&
-            localCharPos.z < halfDepth
-        );
+        this.zoneVisualizers = []
     }
+
+    /**
+     * Update interaction zones based on character position
+     * @param {THREE.Vector3} characterPosition - Current character position
+     */
+    update(characterPosition) {
+        // Find the nearest project within interaction range
+        // Uses simple distance-based detection instead of complex local space transformations
+        let nearestProject = null
+        let nearestDistance = Infinity
+        const interactionDistance = 3.5 // Distance threshold for triggering popup
+
+        // Debug: Log character position every 60 frames (about once per second)
+        if (!this._frameCount) this._frameCount = 0
+        this._frameCount++
+        if (this._frameCount % 60 === 0) {
+            console.log(`Character position: (${characterPosition.x.toFixed(1)}, ${characterPosition.y.toFixed(1)}, ${characterPosition.z.toFixed(1)}) | Checking ${this.projectEntries.length} projects`)
+        }
+
+        for (const entry of this.projectEntries) {
+            const project = entry.item
+            const mesh = entry.mesh
+
+            // Skip if no mesh or missing required properties
+            if (!mesh) {
+                if (this._frameCount % 120 === 0) {
+                    console.warn(`No mesh for project: ${project.name}`)
+                }
+                continue
+            }
+
+            if (!project.url || !project.name) {
+                if (this._frameCount % 120 === 0) {
+                    console.warn(`Missing url or name for project:`, project)
+                }
+                continue
+            }
+
+            // Calculate distance from character to mesh (ignoring Y axis for 2D distance)
+            const charPos2D = new THREE.Vector2(characterPosition.x, characterPosition.z)
+            const meshPos2D = new THREE.Vector2(mesh.position.x, mesh.position.z)
+            const distance = charPos2D.distanceTo(meshPos2D)
+
+            // Debug log when character is close
+            if (distance < 15) {
+                console.log(`Distance to ${project.name}: ${distance.toFixed(2)} units (char: ${characterPosition.x.toFixed(1)}, ${characterPosition.z.toFixed(1)} | mesh: ${mesh.position.x.toFixed(1)}, ${mesh.position.z.toFixed(1)})`)
+            }
+
+            // Check if this is the nearest project within range
+            if (distance < interactionDistance && distance < nearestDistance) {
+                nearestDistance = distance
+                nearestProject = project
+            }
+        }
+
+        // Update active zone based on nearest project
+        if (nearestProject) {
+            if (this.activeZone !== nearestProject) {
+                console.log(`✅ Entering zone: ${nearestProject.name} (distance: ${nearestDistance.toFixed(2)})`)
+                this.enterZone(nearestProject)
+            }
+        } else {
+            if (this.activeZone) {
+                this.exitZone()
+            }
+        }
+    }
+
+
     /**
      * Handle entering a project zone
      * @param {Object} project - Project configuration
