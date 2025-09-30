@@ -183,66 +183,60 @@ export class ProximityInteractionManager {
 
         // Debug logging (occasional)
         if (this._frameCount % 60 === 0) {
-            console.log(`[Proximity] Character at (${characterPosition.x.toFixed(1)}, ${characterPosition.z.toFixed(1)}) | Checking ${this.interactiveObjects.length} objects`)
+            console.log(`[Proximity] Character at (${characterPosition.x.toFixed(1)}, ${characterPosition.z.toFixed(1)}) | Checking hardcoded links`)
         }
 
-        // ⭐ HARDCODED GITHUB PROXIMITY CHECK ⭐
-        // Special case for GitHub model at position (-14, 0, -7)
-        const githubPosition = new THREE.Vector2(-14, -7)
         const charPos2D = new THREE.Vector2(characterPosition.x, characterPosition.z)
-        const distanceToGithub = charPos2D.distanceTo(githubPosition)
-        const githubInteractionDistance = 1.5
+        const interactionDistance = 3.5
 
-        if (distanceToGithub < githubInteractionDistance) {
-            const githubObject = {
+        // ⭐ HARDCODED PROXIMITY CHECKS FOR ALL LINKS ⭐
+        const hardcodedLinks = [
+            {
                 name: 'Github',
-                url: 'https://github.com/Kyoronginus'
+                url: 'https://github.com/Kyoronginus',
+                position: new THREE.Vector2(-14, -7)
+            },
+            {
+                name: 'Patreon',
+                url: 'https://www.patreon.com/c/Kyoronginus',
+                position: new THREE.Vector2(-22, -7)
+            },
+            {
+                name: 'X',
+                url: 'https://x.com/kyoro_ina',
+                position: new THREE.Vector2(-18, -7)
+            },
+            {
+                name: 'pixiv',
+                url: 'https://www.pixiv.net/users/34124210',
+                position: new THREE.Vector2(-26, -7)
+            },
+            {
+                name: 'Fibonacci Spiral Detection',
+                url: 'https://fibonacci-spiral-detecti-bf743.web.app/',
+                position: new THREE.Vector2(-22, 1)
+            },
+            {
+                name: 'Color Analyzer',
+                url: 'https://coloranalyzer-648561351861.us-central1.run.app/',
+                position: new THREE.Vector2(-18, 1)
             }
+        ]
 
-            if (this._frameCount % 30 === 0) {
-                console.log(`[Proximity] 🔧 HARDCODED GitHub check: distance ${distanceToGithub.toFixed(2)} units`)
-            }
+        // Check distance to each hardcoded link
+        for (const link of hardcodedLinks) {
+            const distance = charPos2D.distanceTo(link.position)
 
-            // If this is the nearest, use it
-            if (distanceToGithub < nearestDistance) {
-                nearestDistance = distanceToGithub
-                nearestObject = githubObject
-            }
-        }
-
-        for (const entry of this.interactiveObjects) {
-            const item = entry.item
-            const mesh = entry.mesh
-            
-            // Skip invalid entries
-            if (!mesh) {
-                if (this._frameCount % 120 === 0) {
-                    console.warn(`[Proximity] No mesh for object: ${item.name}`)
+            if (distance < interactionDistance) {
+                if (this._frameCount % 30 === 0) {
+                    console.log(`[Proximity] 🔧 HARDCODED ${link.name}: distance ${distance.toFixed(2)} units`)
                 }
-                continue
-            }
-            
-            if (!item.url || !item.name) {
-                if (this._frameCount % 120 === 0) {
-                    console.warn(`[Proximity] Missing url or name for object:`, item)
+
+                // Track nearest
+                if (distance < nearestDistance) {
+                    nearestDistance = distance
+                    nearestObject = link
                 }
-                continue
-            }
-            
-            // Calculate 2D distance (ignore Y axis)
-            const charPos2D = new THREE.Vector2(characterPosition.x, characterPosition.z)
-            const meshPos2D = new THREE.Vector2(mesh.position.x, mesh.position.z)
-            const distance = charPos2D.distanceTo(meshPos2D)
-            
-            // Debug log when character is nearby
-            if (distance < 15 && this._frameCount % 30 === 0) {
-                console.log(`[Proximity] Distance to "${item.name}": ${distance.toFixed(2)} units`)
-            }
-            
-            // Track nearest object within interaction range
-            if (distance < this.interactionDistance && distance < nearestDistance) {
-                nearestDistance = distance
-                nearestObject = item
             }
         }
         

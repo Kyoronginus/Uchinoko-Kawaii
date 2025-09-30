@@ -735,23 +735,7 @@ export class ModelManager {
         ];
 
         this.creator_items = [
-            {
-                modelPath: '/social_media_github.glb',
-                position: new THREE.Vector3(-14, 0, -7),
-                rotation: new THREE.Euler(0, -0.3 * Math.PI / 2, 0),
-                scale: new THREE.Vector3(2, 2, 2),
-                type: 'statue',
-                enableCollision: true,
-                enablePhysics: true,
-                mass: 2,
-                friction: 0.8,
-                physicsShape: 'box',
-                // Statue-specific zone properties (same as signpost)
-                zoneWidth: 20,
-                zoneDepth: 1,
-                url: 'https://github.com/Kyoronginus',
-                name: 'Github'
-            },
+
             {
                 modelPath: '/letters_3D/P.glb',
                 position: new THREE.Vector3(-22, 0, -7),
@@ -803,6 +787,23 @@ export class ModelManager {
                 url: 'https://www.pixiv.net/users/34124210',
                 name: 'pixiv'
             },
+                        {
+                modelPath: '/social_media_github.glb',
+                position: new THREE.Vector3(-14, 0, -7),
+                rotation: new THREE.Euler(0, -0.3 * Math.PI / 2, 0),
+                scale: new THREE.Vector3(2, 2, 2),
+                type: 'statue',
+                enableCollision: true,
+                enablePhysics: true,
+                mass: 20,
+                friction: 0.8,
+                physicsShape: 'box',
+                // Statue-specific zone properties (same as signpost)
+                zoneWidth: 20,
+                zoneDepth: 1,
+                url: 'https://github.com/Kyoronginus',
+                name: 'Github'
+            },
             {
                 modelPath: '/fibonacci_logo.glb',
                 position: new THREE.Vector3(-22, 0, 1),
@@ -811,7 +812,7 @@ export class ModelManager {
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 2,
+                mass: 20,
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
@@ -828,7 +829,7 @@ export class ModelManager {
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 1,
+                mass: 10,
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
