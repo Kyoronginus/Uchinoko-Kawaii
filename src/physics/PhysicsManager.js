@@ -502,7 +502,7 @@ export class PhysicsManager {
         // Apply throw impulse if direction is provided
         if (grabbedBody && throwDirection) {
             const throwForce = 20.0  // Horizontal throw force
-            const upwardForce = 5.0 // Slight upward arc
+            const upwardForce = 8.0 // Slight upward arc
             // Apply throw velocity
             grabbedBody.velocity.x += throwDirection.x * throwForce
             grabbedBody.velocity.y += upwardForce
