@@ -23,11 +23,11 @@ export class PhysicsManager {
         // Character repulsion ("personal space bubble") defaults
         this.characterRepulsion = {
             enabled: true,
-            detectionScale: 1.01,     // detection radius = scale * character sphere radius
+            detectionScale: 0.71,     // detection radius = scale * character sphere radius
             strength: 0.8,           // push factor (larger = stronger)
             activationSpeed: 0.6,    // only apply when character horizontal speed is below this
             horizontalOnly: true,    // push in XZ plane only
-            maxPushPerStep: 1      // clamp push magnitude per frame
+            maxPushPerStep: 1    // clamp push magnitude per frame
         }
         // Temp vectors to avoid allocations
         this._tmpVec3A = new CANNON.Vec3()
@@ -311,6 +311,9 @@ export class PhysicsManager {
         for (const body of this.world.bodies) {
             if (body === characterBody) continue
             if (body.mass === 0 && body.shapes.length && body.shapes[0] instanceof CANNON.Plane) continue
+
+            // Skip bodies that have character repulsion disabled (e.g., A4 gallery boards)
+            if (body.userData && body.userData.disableCharacterRepulsion) continue
 
             // Approximate body position by its world center of mass
             const otherPos = body.position

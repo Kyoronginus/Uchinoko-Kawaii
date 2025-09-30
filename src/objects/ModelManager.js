@@ -1309,6 +1309,13 @@ export class ModelManager {
             lastInteractionTime: 0
         }
 
+        // Mark A4 boards to disable character repulsion
+        if (item.modelPath === 'board_A4_portrait.glb') {
+            body.userData = body.userData || {}
+            body.userData.disableCharacterRepulsion = true
+            console.log('A4 board physics body marked to disable character repulsion:', item.position)
+        }
+
         // Attach to userData
         root.userData.physics = data
         return data
