@@ -14,6 +14,7 @@ export class PixelCharacter {
         this.physicsBody = null // Physics body reference
         this.physicsManager = null // Physics manager reference for grab system
         this.lastGrabKeyState = false // Track G key state for toggle behavior
+        this.wasGrabbing = false // Track previous grab state to detect changes
 
         // Animation properties
         this.clock = new THREE.Clock()
@@ -22,16 +23,23 @@ export class PixelCharacter {
         this.isSpecialIdle = false
         this.idleFrames = []
         this.animations = {
+            // Normal walking animations
             down: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 },
             up: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 },
             left: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 },
-            right: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 }
+            right: { frames: [], sequence: [1, 0, 2, 0], duration: 0.20 },
+            // Grabbing walking animations
+            grabbing_down: { frames: [], sequence: [1, 0, 2, 0], duration: 0.25 },
+            grabbing_up: { frames: [], sequence: [1, 0, 2, 0], duration: 0.25 },
+            grabbing_left: { frames: [], sequence: [1, 0, 2, 0], duration: 0.25 },
+            grabbing_right: { frames: [], sequence: [1, 0, 2, 0], duration: 0.25 }
         };
         this.idleFrameDuration = 0.8
         this.defaultTexture = null
 
         this.loadIdleFrames()
         this.loadWalkFrames()
+        this.loadGrabbingFrames()
         this.setupCharacterSprite(textureUrl)
         this.setupMovement()
     }
@@ -217,6 +225,11 @@ export class PixelCharacter {
         const velocity = new THREE.Vector3()
         this.isMoving = (this.keys.w || this.keys.a || this.keys.s || this.keys.d)
 
+        // Check for grab state changes
+        const isCurrentlyGrabbing = this.physicsManager && this.physicsManager.isGrabbing()
+        const grabStateChanged = isCurrentlyGrabbing !== this.wasGrabbing
+        this.wasGrabbing = isCurrentlyGrabbing
+
         if (this.isMoving) {
             this.idleTimer = 0;
             this.isSpecialIdle = false;
@@ -232,6 +245,11 @@ export class PixelCharacter {
                 this.animationTime = 0;
                 this.resetToStanding();
             }
+            // Update animation if grab state changed while standing still
+            else if (grabStateChanged) {
+                this.resetToStanding();
+            }
+
             this.idleTimer += deltaTime;
             if (this.idleTimer >= 10 && !this.isSpecialIdle) {
                 this.isSpecialIdle = true;
@@ -371,9 +389,73 @@ export class PixelCharacter {
         }
     }
 
+    loadGrabbingFrames() {
+        const textureLoader = new THREE.TextureLoader();
+        const directions = ['down', 'up', 'left', 'right'];
+
+        // Define grabbing animation frame files
+        // For now, we'll use the same walking frames but with a different animation key
+        // In a real implementation, you would have separate grabbing sprite files
+        const grabbingFrameFiles = {
+            down: [
+                'grabbing_walking/grabbing_front_walking/default_standing.png',  // Standing while grabbing
+                'grabbing_walking/grabbing_front_walking/grabbing_front_walking_1.png',   // Grabbing walk frame 1
+                'grabbing_walking/grabbing_front_walking/grabbing_front_walking_2.png'    // Grabbing walk frame 2
+            ],
+            up: [
+                'grabbing_walking/grabbing_up_walking/default_standing.png',
+                'grabbing_walking/grabbing_up_walking/grabbing_up_walking_1.png',
+                'grabbing_walking/grabbing_up_walking/grabbing_up_walking_2.png'
+            ],
+            left: [
+                'grabbing_walking/grabbing_left_walking/default_standing.png',
+                'grabbing_walking/grabbing_left_walking/grabbing_left_walking_1.png',
+                'grabbing_walking/grabbing_left_walking/grabbing_left_walking_2.png'
+            ],
+            right: [
+                'grabbing_walking/grabbing_right_walking/default_standing.png',
+                'grabbing_walking/grabbing_right_walking/grabbing_right_walking_1.png',
+                'grabbing_walking/grabbing_right_walking/grabbing_right_walking_2.png'
+            ]
+        };
+
+        // Load grabbing animation frames
+        for (const dir of directions) {
+            const grabbingKey = `grabbing_${dir}`;
+            if (grabbingFrameFiles[dir]) {
+                grabbingFrameFiles[dir].forEach(url => {
+                    const texture = textureLoader.load(url);
+                    texture.magFilter = THREE.NearestFilter;
+                    texture.minFilter = THREE.NearestFilter;
+                    this.animations[grabbingKey].frames.push(texture);
+                });
+            }
+        }
+    }
+
     playWalkAnimation() {
-        const currentAnim = this.animations[this.direction];
-        if (!this.sprite || !currentAnim || currentAnim.frames.length === 0) return;
+        // Determine which animation set to use based on grab state
+        let animationKey = this.direction;
+
+        // Check if character is currently grabbing an object
+        if (this.physicsManager && this.physicsManager.isGrabbing()) {
+            animationKey = `grabbing_${this.direction}`;
+        }
+
+        const currentAnim = this.animations[animationKey];
+        if (!this.sprite || !currentAnim || currentAnim.frames.length === 0) {
+            // Fallback to normal animation if grabbing animation doesn't exist
+            const fallbackAnim = this.animations[this.direction];
+            if (!fallbackAnim || fallbackAnim.frames.length === 0) return;
+
+            const sequenceIndex = Math.floor(this.animationTime / fallbackAnim.duration) % fallbackAnim.sequence.length;
+            const frameIndex = fallbackAnim.sequence[sequenceIndex];
+            const newTexture = fallbackAnim.frames[frameIndex];
+
+            this.sprite.material.map = newTexture;
+            this.sprite.customDepthMaterial.map = newTexture;
+            return;
+        }
 
         const sequenceIndex = Math.floor(this.animationTime / currentAnim.duration) % currentAnim.sequence.length;
         const frameIndex = currentAnim.sequence[sequenceIndex];
@@ -389,13 +471,24 @@ resetToStanding() {
         // アニメーションのタイマーをリセット
         this.animationTime = 0;
 
-        const currentAnim = this.animations[this.direction];
+        // Determine which animation set to use based on grab state
+        let animationKey = this.direction;
+        if (this.physicsManager && this.physicsManager.isGrabbing()) {
+            animationKey = `grabbing_${this.direction}`;
+        }
+
+        let currentAnim = this.animations[animationKey];
+
+        // Fallback to normal animation if grabbing animation doesn't exist
+        if (!currentAnim || currentAnim.frames.length === 0) {
+            currentAnim = this.animations[this.direction];
+        }
 
         // 最終的な向きに対応する立ち絵テクスチャを取得
         if (currentAnim && currentAnim.frames.length > 0) {
             // 各方向のアニメーションの最初のフレームを立ち絵とする
             const standingTexture = currentAnim.frames[0];
-            
+
             // 見た目用のマテリアルを更新
             this.sprite.material.map = standingTexture;
 

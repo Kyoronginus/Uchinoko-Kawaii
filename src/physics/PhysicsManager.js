@@ -467,6 +467,11 @@ export class PhysicsManager {
         targetBody.linearDamping = 0.95  // More damping for stability
         targetBody.angularDamping = 0.95
 
+        // Prevent the grabbed object from sleeping while held
+        // This ensures it continues to follow the character even when stationary
+        targetBody.allowSleep = false
+        targetBody.wakeUp() // Wake up the body if it was already sleeping
+
         // Add visual feedback - subtle glow
         const mesh = this.getMeshForBody(targetBody)
         if (mesh) {
@@ -519,6 +524,9 @@ export class PhysicsManager {
             grabbedBody.linearDamping = 0.2
             grabbedBody.angularDamping = 0.4
 
+            // Re-enable sleeping for the released object
+            grabbedBody.allowSleep = true
+
             // Restore original visual state
             const mesh = this.getMeshForBody(grabbedBody)
             if (mesh && mesh.userData.originalEmissive && mesh.material && mesh.material.emissive) {
@@ -552,6 +560,11 @@ export class PhysicsManager {
         }
 
         if (!this.grabSystem.isGrabbing || !this.grabSystem.grabbedBody) return
+
+        // Keep both character and grabbed object awake to ensure smooth following
+        // This prevents physics bodies from sleeping when stationary
+        characterBody.wakeUp()
+        this.grabSystem.grabbedBody.wakeUp()
 
         // Check if grabbed object is too far away (safety check)
         const charPos = characterBody.position
