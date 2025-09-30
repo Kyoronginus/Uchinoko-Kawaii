@@ -105,6 +105,20 @@ const cameraAngleZones = [
             lookAtOffset: new THREE.Vector3(0, 3, 0) // 見る位置のオフセット      // 少し上を見る
         }
     },
+    // Playground
+    {
+        // ゾーンの範囲
+        box: new THREE.Box3(
+            new THREE.Vector3(18, -Infinity, 0), // 最小座標
+            new THREE.Vector3(40, Infinity, 20)       // 最大座標
+        ),
+        // このゾーンに入ったときの新しいカメラアングル
+        angle: {
+            // for gallery
+            followDistance: new THREE.Vector3(0, 2, 8), // キャラクターからの相対位置
+            lookAtOffset: new THREE.Vector3(0, 1, 0) // 見る位置のオフセット      // 少し上を見る
+        }
+    },
 ];
 let currentAngleZone = null;
 
@@ -118,6 +132,24 @@ const hd2dRenderer = new HD2DRenderer(canvas, sizes, scene, camera)
 // Initialize managers
 const physicsManager = new PhysicsManager()
 const modelManager = new ModelManager(scene, physicsManager)
+
+// Connect physics manager to character for grab functionality
+character.setPhysicsManager(physicsManager)
+
+// // Create grab status indicator
+// const grabStatusElement = document.createElement('div')
+// grabStatusElement.style.position = 'fixed'
+// grabStatusElement.style.top = '20px'
+// grabStatusElement.style.left = '20px'
+// grabStatusElement.style.color = 'white'
+// grabStatusElement.style.fontFamily = 'monospace'
+// grabStatusElement.style.fontSize = '14px'
+// grabStatusElement.style.backgroundColor = 'rgba(0,0,0,0.7)'
+// grabStatusElement.style.padding = '10px'
+// grabStatusElement.style.borderRadius = '5px'
+// grabStatusElement.style.zIndex = '1000'
+// grabStatusElement.innerHTML = 'Press G to grab/release objects<br>WASD to move, R to reset'
+// document.body.appendChild(grabStatusElement)
 const lightingManager = new LightingManager(scene)
 const environmentManager = new EnvironmentManager(scene)
 let projectZoneManager = null
@@ -138,6 +170,9 @@ async function initializeScene() {
 
         // Create character physics body and keep it in sync
         character.physicsBody = physicsManager.addCharacterBody(character.getPosition(), 0.5, 1)
+
+        // Set character body reference in physics manager for grab system
+        physicsManager.setCharacterBody(character.physicsBody)
 
         // Initialize project zone manager with loaded signpost and statue models
         const signpostModels = modelManager.getModelsByType('signpost')
@@ -329,6 +364,22 @@ function animate() {
     if (physicsManager.applyCharacterRepulsion && character.physicsBody) {
         physicsManager.applyCharacterRepulsion(character.physicsBody)
     }
+
+    // // Update grab system
+    // if (character.physicsBody) {
+    //     physicsManager.updateGrabSystem(character.physicsBody)
+
+    //     // Update grab status display
+    //     const isGrabbing = physicsManager.isGrabbing()
+    //     const grabbedBody = physicsManager.getGrabbedBody()
+    //     if (isGrabbing && grabbedBody) {
+    //         const mesh = physicsManager.getMeshForBody(grabbedBody)
+    //         const objectName = mesh?.name || 'object'
+    //         grabStatusElement.innerHTML = `Press G to grab/release objects<br>WASD to move, R to reset<br><span style="color: #4f4;">Currently holding: ${objectName}</span>`
+    //     } else {
+    //         grabStatusElement.innerHTML = 'Press G to grab/release objects<br>WASD to move, R to reset'
+    //     }
+    // }
 
     physicsManager.step(deltaTime)
 

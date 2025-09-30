@@ -11,6 +11,9 @@ export class PixelCharacter {
         this.isMoving = false
         this.direction = 'down'
         this.collisionManager = null // Will be set by external code
+        this.physicsBody = null // Physics body reference
+        this.physicsManager = null // Physics manager reference for grab system
+        this.lastGrabKeyState = false // Track G key state for toggle behavior
 
         // Animation properties
         this.clock = new THREE.Clock()
@@ -31,6 +34,14 @@ export class PixelCharacter {
         this.loadWalkFrames()
         this.setupCharacterSprite(textureUrl)
         this.setupMovement()
+    }
+
+    /**
+     * Set the physics manager reference for grab functionality
+     * @param {PhysicsManager} physicsManager
+     */
+    setPhysicsManager(physicsManager) {
+        this.physicsManager = physicsManager
     }
 
     setupCharacterSprite(textureUrl) {
@@ -125,7 +136,8 @@ export class PixelCharacter {
             w: false,
             a: false,
             s: false,
-            d: false
+            d: false,
+            g: false
         }
 
         document.addEventListener('keydown', (event) => {
@@ -146,6 +158,9 @@ export class PixelCharacter {
                     this.keys.d = true
                     this.direction = 'right'
                     break
+                case 'KeyG':
+                    this.keys.g = true
+                    break
             }
             if (event.code === 'KeyR') {
                 this.resetPosition();
@@ -165,6 +180,9 @@ export class PixelCharacter {
                     break
                 case 'KeyD':
                     this.keys.d = false
+                    break
+                case 'KeyG':
+                    this.keys.g = false
                     break
             }
         })
@@ -225,6 +243,9 @@ export class PixelCharacter {
             }
         }
 
+        // Handle grab input (toggle on G key press)
+        this.handleGrabInput()
+
         // 見えるスプライトの位置を更新
         if (this.sprite) {
             this.sprite.position.copy(this.position);
@@ -255,6 +276,43 @@ export class PixelCharacter {
             if (this.keys.d) v.x += this.moveSpeed
         }
         return v
+    }
+
+    /**
+     * Handle grab input - toggle grab/release on G key press
+     */
+    handleGrabInput() {
+        if (!this.physicsManager || !this.physicsBody) return
+
+        // Detect G key press (not held)
+        const grabPressed = this.keys.g && !this.lastGrabKeyState
+        this.lastGrabKeyState = this.keys.g
+
+        if (grabPressed) {
+            // Get character facing direction based on movement direction
+            let facingDirection = new THREE.Vector3(0, 0, -1) // Default forward
+
+            switch (this.direction) {
+                case 'up':
+                    facingDirection.set(0, 0, -1)
+                    break
+                case 'down':
+                    facingDirection.set(0, 0, 1)
+                    break
+                case 'left':
+                    facingDirection.set(-1, 0, 0)
+                    break
+                case 'right':
+                    facingDirection.set(1, 0, 0)
+                    break
+            }
+
+            // Try to grab or release
+            const success = this.physicsManager.tryGrab(this.physicsBody, facingDirection)
+            if (success) {
+                console.log('Grab action performed')
+            }
+        }
     }
 
 

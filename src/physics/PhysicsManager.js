@@ -33,6 +33,18 @@ export class PhysicsManager {
         this._tmpVec3A = new CANNON.Vec3()
         this._tmpVec3B = new CANNON.Vec3()
 
+        // Grab/Carry system
+        this.grabSystem = {
+            isGrabbing: false,
+            grabbedBody: null,
+            grabConstraint: null,
+            grabDistance: 0.5,      // Distance in front of character to hold object
+            grabHeight: 2,        // Height above character center to hold object
+            maxGrabDistance: 2.5,   // Maximum distance to detect grabbable objects
+            grabForce: 800,         // Constraint force for holding objects
+            characterBody: null,    // Reference to character body for collision filtering
+            originalCharacterMass: null // Store original character mass for restoration
+        }
 
         // Ground plane (optional). Comment out if you have a floor collider from GLB.
         const groundBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: this.defaultMaterial })
@@ -315,6 +327,9 @@ export class PhysicsManager {
             // Skip bodies that have character repulsion disabled (e.g., A4 gallery boards)
             if (body.userData && body.userData.disableCharacterRepulsion) continue
 
+            // Skip currently grabbed object to prevent repulsion while carrying
+            if (this.grabSystem.isGrabbing && body === this.grabSystem.grabbedBody) continue
+
             // Approximate body position by its world center of mass
             const otherPos = body.position
 
@@ -349,6 +364,220 @@ export class PhysicsManager {
                 characterBody.velocity.z += tmpB.z
             }
         }
+    }
+
+    /**
+     * Set the character body reference for grab system collision filtering
+     * @param {CANNON.Body} characterBody
+     */
+    setCharacterBody(characterBody) {
+        this.grabSystem.characterBody = characterBody
+    }
+
+    /**
+     * Try to grab the nearest object in front of the character
+     * @param {CANNON.Body} characterBody - The character's physics body
+     * @param {THREE.Vector3} characterDirection - Direction the character is facing
+     * @returns {boolean} - True if an object was grabbed or released
+     */
+    tryGrab(characterBody, characterDirection = new THREE.Vector3(0, 0, -1)) {
+        if (this.grabSystem.isGrabbing) {
+            // Release with throw in the facing direction
+            this.releaseGrab(characterDirection)
+            return true
+        }
+
+        const charPos = characterBody.position
+        const grabDistance = this.grabSystem.maxGrabDistance
+
+        // Find the closest grabbable body in front of the character
+        let closestBody = null
+        let closestDistance = Infinity
+
+        for (const body of this.world.bodies) {
+            // Skip character, static bodies, ground plane, and A4 boards
+            if (body === characterBody || body.mass === 0) continue
+            if (body.userData && body.userData.disableCharacterRepulsion) continue
+
+            // Only allow grabbing objects under 3kg
+            if (body.mass >= 3) continue
+
+            // Check if body is within grab range
+            const toBody = new CANNON.Vec3()
+            body.position.vsub(charPos, toBody)
+            const distance = toBody.length()
+
+            if (distance > grabDistance) continue
+
+            // Check if roughly in front direction (dot product > 0.2 for ~80 degree cone)
+            toBody.normalize()
+            const dot = toBody.dot(new CANNON.Vec3(characterDirection.x, characterDirection.y, characterDirection.z))
+
+            if (dot > 0.2 && distance < closestDistance) {
+                closestDistance = distance
+                closestBody = body
+            }
+        }
+
+        if (closestBody) {
+            this.grabObject(characterBody, closestBody)
+            return true
+        }
+
+        return false
+    }
+
+    /**
+     * Grab a specific object
+     * @param {CANNON.Body} characterBody
+     * @param {CANNON.Body} targetBody
+     */
+    grabObject(characterBody, targetBody) {
+        if (this.grabSystem.isGrabbing) {
+            this.releaseGrab()
+        }
+
+        // Calculate grab position (in front of and above character)
+        const grabOffset = new CANNON.Vec3(0, this.grabSystem.grabHeight, -this.grabSystem.grabDistance)
+
+        // Create a point-to-point constraint to hold the object
+        const constraint = new CANNON.PointToPointConstraint(
+            characterBody,
+            grabOffset,
+            targetBody,
+            new CANNON.Vec3(0, 0, 0)
+        )
+
+        // Configure constraint properties
+        constraint.collideConnected = false // Don't collide grabbed object with character
+
+        // Increase character mass temporarily to prevent sinking when carrying heavy objects
+        const originalCharacterMass = characterBody.mass
+        characterBody.mass = Math.max(originalCharacterMass, targetBody.mass * 1.5)
+
+        this.world.addConstraint(constraint)
+
+        // Store grab state
+        this.grabSystem.isGrabbing = true
+        this.grabSystem.grabbedBody = targetBody
+        this.grabSystem.grabConstraint = constraint
+        this.grabSystem.originalCharacterMass = originalCharacterMass
+
+        // Adjust grabbed object's physics properties for better carrying
+        targetBody.linearDamping = 0.95  // More damping for stability
+        targetBody.angularDamping = 0.95
+
+        // Add visual feedback - subtle glow
+        const mesh = this.getMeshForBody(targetBody)
+        if (mesh) {
+            mesh.userData.originalEmissive = mesh.material?.emissive?.clone() || new THREE.Color(0x000000)
+            if (mesh.material && mesh.material.emissive) {
+                mesh.material.emissive.setHex(0x004400) // Subtle green glow
+            }
+        }
+
+        console.log('Grabbed object:', mesh?.name || 'unnamed object')
+    }
+
+    /**
+     * Release the currently grabbed object with throw mechanics
+     * @param {THREE.Vector3} throwDirection - Direction to throw the object (optional)
+     */
+    releaseGrab(throwDirection = null) {
+        if (!this.grabSystem.isGrabbing) return
+
+        const grabbedBody = this.grabSystem.grabbedBody
+        const characterBody = this.grabSystem.characterBody
+
+        // Remove constraint
+        if (this.grabSystem.grabConstraint) {
+            this.world.removeConstraint(this.grabSystem.grabConstraint)
+        }
+
+        // Restore character's original mass
+        if (characterBody && this.grabSystem.originalCharacterMass) {
+            characterBody.mass = this.grabSystem.originalCharacterMass
+        }
+
+        // Apply throw impulse if direction is provided
+        if (grabbedBody && throwDirection) {
+            const throwForce = 20.0  // Horizontal throw force
+            const upwardForce = 5.0 // Slight upward arc
+            // Apply throw velocity
+            grabbedBody.velocity.x += throwDirection.x * throwForce
+            grabbedBody.velocity.y += upwardForce
+            grabbedBody.velocity.z += throwDirection.z * throwForce
+
+            // Add slight angular velocity for realistic tumbling
+            grabbedBody.angularVelocity.x += (Math.random() - 0.5) * 2
+            grabbedBody.angularVelocity.y += (Math.random() - 0.5) * 2
+            grabbedBody.angularVelocity.z += (Math.random() - 0.5) * 2
+        }
+
+        // Restore original physics properties
+        if (grabbedBody) {
+            grabbedBody.linearDamping = 0.2
+            grabbedBody.angularDamping = 0.4
+
+            // Restore original visual state
+            const mesh = this.getMeshForBody(grabbedBody)
+            if (mesh && mesh.userData.originalEmissive && mesh.material && mesh.material.emissive) {
+                mesh.material.emissive.copy(mesh.userData.originalEmissive)
+                delete mesh.userData.originalEmissive
+            }
+        }
+
+        console.log('Released object:', this.getMeshForBody(grabbedBody)?.name || 'unnamed object')
+
+        // Clear grab state
+        this.grabSystem.isGrabbing = false
+        this.grabSystem.grabbedBody = null
+        this.grabSystem.grabConstraint = null
+        this.grabSystem.originalCharacterMass = null
+    }
+
+    /**
+     * Update grab system - call this each frame
+     * @param {CANNON.Body} characterBody
+     */
+    updateGrabSystem(characterBody) {
+        // Ensure character stays above ground level (prevent sinking)
+        const minCharacterHeight = 0.9 // Character sphere radius + small buffer
+        if (characterBody.position.y < minCharacterHeight) {
+            characterBody.position.y = minCharacterHeight
+            // Dampen downward velocity to prevent bouncing
+            if (characterBody.velocity.y < 0) {
+                characterBody.velocity.y *= 0.1
+            }
+        }
+
+        if (!this.grabSystem.isGrabbing || !this.grabSystem.grabbedBody) return
+
+        // Check if grabbed object is too far away (safety check)
+        const charPos = characterBody.position
+        const objPos = this.grabSystem.grabbedBody.position
+        const distance = charPos.distanceTo(objPos)
+
+        if (distance > this.grabSystem.maxGrabDistance * 2) {
+            console.log('Object too far, releasing grab')
+            this.releaseGrab()
+        }
+    }
+
+    /**
+     * Check if currently grabbing an object
+     * @returns {boolean}
+     */
+    isGrabbing() {
+        return this.grabSystem.isGrabbing
+    }
+
+    /**
+     * Get the currently grabbed body
+     * @returns {CANNON.Body|null}
+     */
+    getGrabbedBody() {
+        return this.grabSystem.grabbedBody
     }
 }
 
