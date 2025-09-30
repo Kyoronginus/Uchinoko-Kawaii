@@ -747,7 +747,7 @@ export class ModelManager {
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
-                zoneWidth: 2,
+                zoneWidth: 20,
                 zoneDepth: 1,
                 url: 'https://github.com/Kyoronginus',
                 name: 'Github'
@@ -760,7 +760,7 @@ export class ModelManager {
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 2,
+                mass: 20,
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
@@ -777,7 +777,7 @@ export class ModelManager {
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 2,
+                mass: 20,
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
@@ -794,7 +794,7 @@ export class ModelManager {
                 type: 'statue',
                 enableCollision: true,
                 enablePhysics: true,
-                mass: 2,
+                mass: 20,
                 friction: 0.8,
                 physicsShape: 'box',
                 // Statue-specific zone properties (same as signpost)
