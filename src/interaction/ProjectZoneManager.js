@@ -53,7 +53,7 @@ export class ProjectZoneManager {
 
     /**
      * Add visual indicators for project zones
-     * Shows circular proximity ranges for distance-based detection
+     * Shows circular proximity ranges for distance-based detectionsaa
      */
     addZoneVisualizers() {
         if (!this.scene) return

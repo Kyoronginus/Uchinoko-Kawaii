@@ -1,6 +1,6 @@
 #start-button {
-    display: none; /* 初期は非表示 */
-    opacity: 0; /* フェードイン効果用 */
+    display: none;
+    opacity: 0;
     padding: 15px 30px;
     font-size: 18px;
     font-family: 'Silkscreen', monospace;
