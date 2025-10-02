@@ -145,7 +145,8 @@ export class PixelCharacter {
             a: false,
             s: false,
             d: false,
-            g: false
+            g: false,
+            space: false
         }
 
         document.addEventListener('keydown', (event) => {
@@ -169,6 +170,9 @@ export class PixelCharacter {
                 case 'KeyG':
                     this.keys.g = true
                     break
+                case 'Space':
+                    this.keys.space = true
+                    break
             }
             if (event.code === 'KeyR') {
                 this.resetPosition();
@@ -191,6 +195,9 @@ export class PixelCharacter {
                     break
                 case 'KeyG':
                     this.keys.g = false
+                    break
+                case 'Space':
+                    this.keys.space = false
                     break
             }
         })
@@ -302,9 +309,9 @@ export class PixelCharacter {
     handleGrabInput() {
         if (!this.physicsManager || !this.physicsBody) return
 
-        // Detect G key press (not held)
-        const grabPressed = this.keys.g && !this.lastGrabKeyState
-        this.lastGrabKeyState = this.keys.g
+        // Detect G key press (not held) or space key press
+        const grabPressed = (this.keys.g || this.keys.space) && !this.lastGrabKeyState 
+        this.lastGrabKeyState = this.keys.g || this.keys.space;
 
         if (grabPressed) {
             // Get character facing direction based on movement direction
