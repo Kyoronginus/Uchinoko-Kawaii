@@ -251,7 +251,7 @@ export class PixelCharacter {
             }
 
             this.idleTimer += deltaTime;
-            if (this.idleTimer >= 10 && !this.isSpecialIdle) {
+            if (this.idleTimer >= 10 && !this.isSpecialIdle && !isCurrentlyGrabbing) {
                 this.isSpecialIdle = true;
                 this.animationTime = 0;
             }
