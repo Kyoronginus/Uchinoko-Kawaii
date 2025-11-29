@@ -17,17 +17,17 @@ export class LightingManager {
                 position: { x: 50, y: 50, z: 50 },
                 castShadow: true,
                 shadow: {
-                    mapSize: { width: 1024, height: 1024 }, // Higher resolution for crisp shadows
+                    mapSize: { width: 1024, height: 1024 }, 
                     camera: {
                         near: 0.1,
-                        far: 120, // farの値も必要に応じて調整
+                        far: 120, 
                         left: -250,
                         right: 250,
                         top: 250,
                         bottom: -250
                     },
-                    bias: -0.010, // Reduced bias for sharper shadows
-                    normalBias: 0.001 // Reduced normal bias
+                    bias: -0.010, 
+                    normalBias: 0.001 
                 }
             }
         }

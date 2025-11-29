@@ -429,7 +429,8 @@ export class PixelCharacter {
         this.sprite.material.map = newTexture;
         this.sprite.customDepthMaterial.map = newTexture;
     }
-resetToStanding() {
+
+    resetToStanding() {
         if (!this.sprite) return;
 
         // アニメーションのタイマーをリセット

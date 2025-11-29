@@ -238,28 +238,6 @@ export class EnvironmentManager {
     }
 
     /**
-     * Create a fallback procedural floor
-     */
-    createFallbackFloor() {
-        const config = this.config.fallbackFloor
-
-        const floorGeometry = new THREE.PlaneGeometry(config.size.width, config.size.height)
-        const floorMaterial = new THREE.MeshStandardMaterial({
-            color: config.color,
-            roughness: 0.1,//表面の粗さ（1に近いほどマット）
-            metalness: 0.9 // 金属っぽさ
-        });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial)
-        floor.rotation.x = -Math.PI / 2 // Lay flat
-        floor.receiveShadow = config.receiveShadow
-
-        this.scene.add(floor)
-        this.environmentObjects.fallbackFloor = floor
-
-        console.log('Fallback floor created')
-    }
-
-    /**
      * Update background color
      * @param {number} color - New background color (hex)
      */
