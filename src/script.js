@@ -12,12 +12,10 @@ import { PhysicsManager } from './physics/PhysicsManager.js'
 const loadingOverlay = document.getElementById('loading-overlay');
 const progressBarFill = document.getElementById('progress-bar-fill');
 const startButton = document.getElementById('start-button');
-// ★★★★★ 1. DefaultLoadingManager を使用（全ローダーを自動追跡） ★★★★★ s
 const loadingManager = THREE.DefaultLoadingManager
 
-// 完了時の処理（全アセットが読み込み終わったら）
 loadingManager.onLoad = () => {
-    console.log('✅ すべてのアセットのロードが完了しました');
+    console.log('Scene loaded');
     if (progressBarFill) progressBarFill.style.width = '100%';
     setTimeout(() => {
         if (startButton) {
@@ -26,17 +24,15 @@ loadingManager.onLoad = () => {
         }
     }, 500);
 }
-// 進捗中の処理
 loadingManager.onProgress = (itemUrl, itemsLoaded, itemsTotal) => {
     const progress = itemsTotal > 0 ? (itemsLoaded / itemsTotal) : 0;
     if (progressBarFill) progressBarFill.style.width = `${progress * 100}%`;
-    console.log(`📦 ロード進捗: ${Math.round(progress * 100)}% (${itemsLoaded}/${itemsTotal}) - ${itemUrl}`);
+    console.log(`load progress: ${Math.round(progress * 100)}% (${itemsLoaded}/${itemsTotal}) - ${itemUrl}`);
 }
-// エラー時の処理
 loadingManager.onError = (url) => {
-    console.error('❌ アセットのロードに失敗:', url);
+    console.error('load error:', url);
 }
-// ★★★★★ ここまで ★★★★★
+
 
 
 // Canvas
@@ -56,78 +52,75 @@ const sizes = {
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100)
 camera.position.set(0, 12, 12)
 
-// ピクセルキャラクター作成
+// character
 const character = new PixelCharacter('/default_standing.png', scene, camera)
 
-// Camera Controller (キャラクター追従モード)
+// Camera Controller (character follow mode)
 const cameraController = new CameraController(camera, character)
 const cameraAngleZones = [
 
-    //look above for standee
+    // look above for standee
     {
-        // ゾーンの範囲
+        // zone range
         box: new THREE.Box3(
-            new THREE.Vector3(-1, -Infinity, -9), // 最小座標
-            new THREE.Vector3(1, Infinity, -7)       // 最大座標
+            new THREE.Vector3(-1, -Infinity, -9), 
+            new THREE.Vector3(1, Infinity, -7)
         ),
-        // このゾーンに入ったときの新しいカメラアングル
+        // this zone entered when the new camera angle
         angle: {
             // for gallery
-            followDistance: new THREE.Vector3(0, 3, 8), // キャラクターからの相対位置
-            lookAtOffset: new THREE.Vector3(0, 3, 0) // 見る位置のオフセット      // 少し上を見る
+            followDistance: new THREE.Vector3(0, 3, 8), 
+            lookAtOffset: new THREE.Vector3(0, 3, 0) 
         }
     },
-    //Gallery
+    // Gallery
     {
-        // ゾーンの範囲
+        // zone range
         box: new THREE.Box3(
-            new THREE.Vector3(8, -Infinity, -30), // 最小座標
-            new THREE.Vector3(68, Infinity, -10)       // 最大座標
+            new THREE.Vector3(8, -Infinity, -30), // min
+            new THREE.Vector3(68, Infinity, -10)
         ),
-        // このゾーンに入ったときの新しいカメラアングル
+        // this zone entered when the new camera angle
         angle: {
             // for gallery
-            followDistance: new THREE.Vector3(0, 3, 8), // キャラクターからの相対位置
-            lookAtOffset: new THREE.Vector3(0, 3, 0) // 見る位置のオフセット      // 少し上を見る
+            followDistance: new THREE.Vector3(0, 3, 8), 
+            lookAtOffset: new THREE.Vector3(0, 3, 0) 
         }
     },
     // Creator
     {
-        // ゾーンの範囲
+        // zone range
         box: new THREE.Box3(
-            new THREE.Vector3(-28, -Infinity, -40), // 最小座標
-            new THREE.Vector3(-3, Infinity, 5)       // 最大座標
+            new THREE.Vector3(-28, -Infinity, -40), 
+            new THREE.Vector3(-3, Infinity, 5)
         ),
-        // このゾーンに入ったときの新しいカメラアングル
+        // this zone entered when the new camera angle
         angle: {
             // for gallery
-            followDistance: new THREE.Vector3(0, 13, 8), // キャラクターからの相対位置
-            lookAtOffset: new THREE.Vector3(0, 3, 0) // 見る位置のオフセット      // 少し上を見る
+            followDistance: new THREE.Vector3(0, 13, 8), 
+            lookAtOffset: new THREE.Vector3(0, 3, 0) 
         }
     },
     // Playground
     {
-        // ゾーンの範囲
+        // zone range
         box: new THREE.Box3(
-            new THREE.Vector3(18, -Infinity, 0), // 最小座標
-            new THREE.Vector3(40, Infinity, 20)       // 最大座標
+            new THREE.Vector3(18, -Infinity, 0), 
+            new THREE.Vector3(40, Infinity, 20)
         ),
-        // このゾーンに入ったときの新しいカメラアングル
+        // this zone entered when the new camera angle
         angle: {
             // for gallery
-            followDistance: new THREE.Vector3(0, 2, 8), // キャラクターからの相対位置
-            lookAtOffset: new THREE.Vector3(0, 1, 0) // 見る位置のオフセット      // 少し上を見る
+            followDistance: new THREE.Vector3(0, 2, 8), 
+            lookAtOffset: new THREE.Vector3(0, 1, 0) 
         }
     },
 ];
 let currentAngleZone = null;
 
 
-
 // HD-2D Renderer
 const hd2dRenderer = new HD2DRenderer(canvas, sizes, scene, camera)
-
-
 
 // Initialize managers
 const physicsManager = new PhysicsManager()
@@ -135,40 +128,17 @@ const modelManager = new ModelManager(scene, physicsManager)
 
 // Connect physics manager to character for grab functionality
 character.setPhysicsManager(physicsManager)
-
-// // Create grab status indicator
-// const grabStatusElement = document.createElement('div')
-// grabStatusElement.style.position = 'fixed'
-// grabStatusElement.style.top = '20px'
-// grabStatusElement.style.left = '20px'
-// grabStatusElement.style.color = 'white'
-// grabStatusElement.style.fontFamily = 'monospace'
-// grabStatusElement.style.fontSize = '14px'
-// grabStatusElement.style.backgroundColor = 'rgba(0,0,0,0.7)'
-// grabStatusElement.style.padding = '10px'
-// grabStatusElement.style.borderRadius = '5px'
-// grabStatusElement.style.zIndex = '1000'
-// grabStatusElement.innerHTML = 'Press G to grab/release objects<br>WASD to move, R to reset'
-// document.body.appendChild(grabStatusElement)
 const lightingManager = new LightingManager(scene)
 const environmentManager = new EnvironmentManager(scene)
 let proximityManager = null
 
 const textManager = new TextManager(scene);
 textManager.createWelcomeText();
-// Initialize the scene asynchronouslya
 async function initializeScene() {
     try {
-        // Setup lighting
         lightingManager.setupLighting()
-
-        // Setup environment (floor, background, etc.)
         await environmentManager.setupEnvironment()
-
-        // Load all models (both untextured models and signposts)
         await modelManager.loadAllModels()
-
-        // Debug: Log all loaded models
         console.log('📦 All loaded models by type:')
         const allModels = modelManager.models
         const modelsByType = {}
@@ -272,7 +242,7 @@ function setupExampleText() {
             scale: 2
         }
     )
-    
+
     environmentManager.addFloorText('Use    to grab objects',
         { x: 0, z: 16 },
         {
@@ -346,45 +316,31 @@ function setupGalleryText() {
     )
 }
 
-
-
 // Start scene initialization
 initializeScene()
-
-// Floor and environment loading is now handled by EnvironmentManager
-
-// Lighting and background are now handled by LightingManager and EnvironmentManager
 
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
-    // Update depth-of-field focus distance based on character position
     const distance = character.getPosition().distanceTo(camera.position);
     hd2dRenderer.setFocusDistance(distance);
-    // Update character input and visuals (will set desired velocity)
-    const deltaTime = 1 / 60; // Approximate delta time for 60fps
+    const deltaTime = 1 / 60; 
     character.update()
 
 
     const charPos = character.getPosition();
     let inAnyZone = false;
-
-    // すべてのカメラゾーンをチェック
     for (const zone of cameraAngleZones) {
         if (zone.box.containsPoint(charPos)) {
             inAnyZone = true;
             if (currentAngleZone !== zone) {
-                // 新しいゾーンに入ったので、カメラアングルを変更
                 currentAngleZone = zone;
                 cameraController.setFollowAngle(zone.angle);
             }
             break;
         }
     }
-
-    // どのゾーンにも入っていない場合
     if (!inAnyZone && currentAngleZone !== null) {
-        // デフォルトのアングルに戻す
         currentAngleZone = null;
         cameraController.resetToDefaultAngle();
     }
@@ -401,28 +357,11 @@ function animate() {
         character.physicsBody.position.y = Math.max(character.physicsBody.position.y, 0.9)
     }
 
-    // Step physics and sync meshes
-
     // Apply character repulsion bubble after stepping if available
     if (physicsManager.applyCharacterRepulsion && character.physicsBody) {
         physicsManager.applyCharacterRepulsion(character.physicsBody)
     }
 
-    // // Update grab system
-    // if (character.physicsBody) {
-    //     physicsManager.updateGrabSystem(character.physicsBody)
-
-    //     // Update grab status display
-    //     const isGrabbing = physicsManager.isGrabbing()
-    //     const grabbedBody = physicsManager.getGrabbedBody()
-    //     if (isGrabbing && grabbedBody) {
-    //         const mesh = physicsManager.getMeshForBody(grabbedBody)
-    //         const objectName = mesh?.name || 'object'
-    //         grabStatusElement.innerHTML = `Press G to grab/release objects<br>WASD to move, R to reset<br><span style="color: #4f4;">Currently holding: ${objectName}</span>`
-    //     } else {
-    //         grabStatusElement.innerHTML = 'Press G to grab/release objects<br>WASD to move, R to reset'
-    //     }
-    // }
 
     physicsManager.step(deltaTime)
 
@@ -456,13 +395,10 @@ window.addEventListener('resize', () => {
 })
 
 startButton.addEventListener('click', () => {
-    console.log('🚀 3Dワールドを開始します');
-    loadingOverlay.style.opacity = '0'; // フェードアウト
+    console.log('Starting 3D world...');
+    loadingOverlay.style.opacity = '0';
     setTimeout(() => {
-        loadingOverlay.style.display = 'none'; // 完全に非表示に
-        animate(); // ★ ここでアニメーションを開始
+        loadingOverlay.style.display = 'none';
+        animate();
     }, 500);
 });
-
-// ★ 最初はanimate()を呼ばない（STARTボタンが押されるまで待機）
-// animate() ← この行をコメントアウトまたは削除

@@ -5,7 +5,7 @@ export class PixelCharacter {
         this.scene = scene
         this.camera = camera
         this.loadingManager = loadingManager || THREE.DefaultLoadingManager
-        this.position = new THREE.Vector3(0, 0.1, 8) // キャラクターの基準Y位置a
+        this.position = new THREE.Vector3(0, 0.1, 8)
         this.initialPosition = new THREE.Vector3(0,0.1,8);
         this.moveSpeed = 4
         this.isMoving = false
@@ -53,13 +53,13 @@ export class PixelCharacter {
     }
 
     setupCharacterSprite(textureUrl) {
-        const textureLoader = new THREE.TextureLoader(this.loadingManager) // 統一されたマネージャーを使用
+        const textureLoader = new THREE.TextureLoader(this.loadingManager) 
         textureLoader.load(textureUrl, (texture) => {
             texture.magFilter = THREE.NearestFilter
             texture.minFilter = THREE.NearestFilter
             this.defaultTexture = texture
 
-            // ★ 見た目用のマテリアル (影を受け取れるようにLambertを使用)
+            // material for sprite
             const spriteMaterial = new THREE.MeshLambertMaterial({
                 map: texture,
                 transparent: true,
@@ -68,73 +68,34 @@ export class PixelCharacter {
             });
 
             this.sprite = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), spriteMaterial);
-            this.sprite.receiveShadow = true; // ✅ 他のオブジェクトからの影を自分に表示する
-            this.sprite.castShadow = true;    // ✅ 自分自身が影を落とす
-
-            // ★★★★★ ここからが最重要 ★★★★★
-            // 影の形をテクスチャの透明度に応じて切り抜くための、特殊なマテリアルを設定
+            this.sprite.receiveShadow = true; 
+            this.sprite.castShadow = true;  
+            
+            // custom depth material to cut out the shadow shape based on the texture's transparency
             this.sprite.customDepthMaterial = new THREE.MeshDepthMaterial({
                 depthPacking: THREE.RGBADepthPacking,
                 map: texture,
-                alphaTest: 0.5 // この値より透明なピクセルは影の計算から除外される
+                alphaTest: 0.5 
             });
-            // ★★★★★ ここまで ★★★★★
 
             this.scene.add(this.sprite)
             console.log('Character sprite loaded successfully')
         })
     }
 
-    createFallbackCharacter() {
-        // フォールバック：シンプルな色付きスプライト
-        const canvas = document.createElement('canvas')
-        canvas.width = 32
-        canvas.height = 32
-        const ctx = canvas.getContext('2d')
-
-        // シンプルなピクセルキャラクター描画
-        ctx.fillStyle = '#ff6b6b'
-        ctx.fillRect(8, 4, 16, 12) // 頭
-        ctx.fillStyle = '#4ecdc4'
-        ctx.fillRect(6, 16, 20, 16) // 体
-
-        const texture = new THREE.CanvasTexture(canvas)
-        texture.magFilter = THREE.NearestFilter
-        texture.minFilter = THREE.NearestFilter
-
-        // Use MeshBasicMaterial for fallback character to receive shadows
-        const spriteMaterial = new THREE.MeshBasicMaterial({
-            map: texture,
-            transparent: true,
-            alphaTest: 0.1,
-            side: THREE.DoubleSide
-        })
-
-        // Use Mesh instead of Sprite for shadow receiving
-        this.sprite = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), spriteMaterial)
-        this.sprite.position.copy(this.position)
-        this.sprite.receiveShadow = true // Allow fallback character to receive shadows
-
-        // Create shadow caster for fallback character too
-        this.createCharacterShadowCaster()
-
-        this.scene.add(this.sprite)
-    }
-
     createCharacterShadowCaster() {
         const shadowGeometry = new THREE.PlaneGeometry(2, 2);
 
-        // ★ 影を落とす役のマテリアル：alphaMapが使えるStandardMaterialが最適
         const shadowMaterial = new THREE.MeshStandardMaterial({
-            alphaMap: this.defaultTexture, // 影の形をテクスチャで決める
-            alphaTest: 0.5,                // 透明部分を切り抜くしきい値
+            alphaMap: this.defaultTexture,
+            alphaTest: 0.5,
             transparent: true,
-            opacity: 0                      // 完全に透明にする
+            opacity: 0
         });
 
         this.shadowCaster = new THREE.Mesh(shadowGeometry, shadowMaterial);
-        this.shadowCaster.castShadow = true;     // ✅ 影を落とす設定
-        this.shadowCaster.receiveShadow = false; // 影は受け取らない
+        this.shadowCaster.castShadow = true;
+        this.shadowCaster.receiveShadow = false;
 
         this.scene.add(this.shadowCaster);
     }
@@ -226,7 +187,6 @@ export class PixelCharacter {
     }
 
     update() {
-        // ... (既存の移動・アニメーションのロジックは変更なし) ...
         const deltaTime = this.clock.getDelta();
         const wasMoving = this.isMoving;
         const velocity = new THREE.Vector3()
@@ -400,14 +360,11 @@ export class PixelCharacter {
         const textureLoader = new THREE.TextureLoader();
         const directions = ['down', 'up', 'left', 'right'];
 
-        // Define grabbing animation frame files
-        // For now, we'll use the same walking frames but with a different animation key
-        // In a real implementation, you would have separate grabbing sprite files
         const grabbingFrameFiles = {
             down: [
-                'grabbing_walking/grabbing_front_walking/default_standing.png',  // Standing while grabbing
-                'grabbing_walking/grabbing_front_walking/grabbing_front_walking_1.png',   // Grabbing walk frame 1
-                'grabbing_walking/grabbing_front_walking/grabbing_front_walking_2.png'    // Grabbing walk frame 2
+                'grabbing_walking/grabbing_front_walking/default_standing.png',
+                'grabbing_walking/grabbing_front_walking/grabbing_front_walking_1.png',
+                'grabbing_walking/grabbing_front_walking/grabbing_front_walking_2.png'
             ],
             up: [
                 'grabbing_walking/grabbing_up_walking/default_standing.png',

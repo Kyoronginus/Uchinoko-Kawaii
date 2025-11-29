@@ -19,7 +19,7 @@ export class HD2DRenderer {
 
         // Configure shadows for pixel art style
         this.renderer.shadowMap.enabled = true
-        this.renderer.shadowMap.type = THREE.PCFShadowMap // Crisp shadows for pixel art
+        this.renderer.shadowMap.type = THREE.PCFShadowMap
         this.renderer.shadowMap.autoUpdate = true
         this.renderer.outputColorSpace = THREE.SRGBColorSpace
 
@@ -62,16 +62,16 @@ export class HD2DRenderer {
             }
         )
 
-        // 1. Effect Composerのセットアップ (full resolution for DOF)
+        // effect composer
         this.composer = new EffectComposer(this.renderer)
         this.composer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
         this.composer.setSize(this.sizes.width, this.sizes.height)
 
-        // 2. 通常のレンダリングパスを追加
+        // rendering pass
         const renderPass = new RenderPass(scene, camera)
         this.composer.addPass(renderPass)
 
-        // 3. 被写界深度（Bokeh）パスを追加
+        //  bokeh pass
         this.bokehPass = new BokehPass(scene, camera, {
             focus: 12.0,        // Initial focus distance
             aperture: 0.0020,   // Aperture size (larger = more blur)
@@ -80,34 +80,6 @@ export class HD2DRenderer {
             height: this.sizes.height
         })
         this.composer.addPass(this.bokehPass)
-
-        // Pixel art upscaling shader
-        // this.pixelArtMaterial = new THREE.ShaderMaterial({
-        //     uniforms: {
-        //         tDiffuse: { value: null },
-        //         resolution: { value: new THREE.Vector2(this.sizes.width, this.sizes.height) },
-        //         pixelSize: { value: 1.0 }
-        //     },
-        //     vertexShader: `
-        //         varying vec2 vUv;
-        //         void main() {
-        //             vUv = uv;
-        //             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        //         }
-        //     `,
-        //     fragmentShader: `
-        //         uniform sampler2D tDiffuse;
-        //         uniform vec2 resolution;
-        //         uniform float pixelSize;
-        //         varying vec2 vUv;
-
-        //         void main() {
-        //             vec2 dxy = pixelSize / resolution;
-        //             vec2 coord = dxy * floor(vUv / dxy);
-        //             gl_FragColor = texture2D(tDiffuse, coord);
-        //         }
-        //     `
-        // })
 
         // Full screen quad for post-processing
         this.postProcessQuad = new THREE.Mesh(
@@ -122,7 +94,6 @@ export class HD2DRenderer {
     }
 
     render(scene, camera) {
-        // EffectComposerが直接スクリーンに結果を描画します
         this.composer.render()
     }
 
@@ -143,27 +114,14 @@ export class HD2DRenderer {
         // Update bokeh pass parameters
         this.bokehPass.setSize(width, height)
 
-        // this.pixelArtMaterial.uniforms.resolution.value.set(width, height)
     }
 
-    /**
-     * Set the focus distance for depth-of-field effect
-     * @param {number} distance - Focus distance from camera
-     */
     setFocusDistance(distance) {
         if (this.bokehPass) {
             this.bokehPass.uniforms.focus.value = distance
-            // Debug logging (remove in production)
-            if (Math.random() < 0.01) { // Log occasionally to avoid spam
-                console.log('DOF focus distance updated:', distance.toFixed(2))
-            }
         }
     }
 
-    /**
-     * Set the aperture size (controls blur intensity)
-     * @param {number} aperture - Aperture size (smaller = more blur)
-     */
     setAperture(aperture) {
         if (this.bokehPass) {
             console.log('Aperture set to:', aperture)
@@ -171,20 +129,12 @@ export class HD2DRenderer {
         }
     }
 
-    /**
-     * Set the maximum blur amount
-     * @param {number} maxBlur - Maximum blur amount
-     */
     setMaxBlur(maxBlur) {
         if (this.bokehPass) {
             this.bokehPass.uniforms.maxblur.value = maxBlur
         }
     }
 
-    /**
-     * Get current DOF parameters
-     * @returns {Object} Current DOF settings
-     */
     getDOFParameters() {
         if (!this.bokehPass) return null
 
@@ -195,10 +145,6 @@ export class HD2DRenderer {
         }
     }
 
-    /**
-     * Enable or disable depth-of-field effect
-     * @param {boolean} enabled - Whether DOF should be enabled
-     */
     setDOFEnabled(enabled) {
         if (this.bokehPass) {
             this.bokehPass.enabled = enabled

@@ -189,7 +189,6 @@ export class PhysicsManager {
         }
 
 
-    // src/physics/PhysicsManager.js
 
     addBodyForMesh(mesh, options = {}) {
         const {
