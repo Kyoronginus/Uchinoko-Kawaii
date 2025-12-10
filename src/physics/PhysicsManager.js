@@ -225,24 +225,24 @@ export class PhysicsManager {
       angularDamping = 0.4,
     } = options;
 
-    // 1. モデルの現在の回転を一時的に保存
+    // 1. Temporarily save current model rotation
     const initialQuaternion = mesh.quaternion.clone();
 
-    // 2. 回転をリセットして、モデル本来の形の当たり判定を計算
+    // 2. Reset rotation and calculate collision for original model shape
     mesh.quaternion.set(0, 0, 0, 1);
-    mesh.updateWorldMatrix(true, true); // 行列を更新
+    mesh.updateWorldMatrix(true, true); // Update matrix
 
     const box = new THREE.Box3().setFromObject(mesh);
     const size = box.getSize(new THREE.Vector3());
     const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
 
-    // 3. モデルの回転を元に戻す
+    // 3. Restore model rotation
     mesh.quaternion.copy(initialQuaternion);
     mesh.updateWorldMatrix(true, true);
 
-    // 4. 'shape'オプションに応じて、正しい当たり判定の形状を作成
-    // 注意: Cannon-ES は Box vs Trimesh の衝突が未実装。
-    // → 静的(static)は Trimesh を使って高精度、動的(dynamic)は ConvexHull を使って安定な衝突を実現します。
+    // 4. Create correct collision shape according to 'shape' option
+    // Note: Cannon-ES has not implemented Box vs Trimesh collision.
+    // -> Static uses Trimesh for high precision, dynamic uses ConvexHull for stable collision.
     let cannonShape;
     let sphereRadius = 0;
     if (shape === "sphere") {
@@ -268,7 +268,7 @@ export class PhysicsManager {
       );
       cannonShape = new CANNON.Box(halfExtentsBox);
     }
-    // ★★★★★ ここまで ★★★★★
+    // ★★★★★ Up to here ★★★★★
 
     const material = this.createMaterial(friction, restitution);
 
@@ -278,11 +278,11 @@ export class PhysicsManager {
       shape: cannonShape,
     });
 
-    // 4. 見た目の位置と、保存しておいた正しい回転を物理ボディに適用
+    // 4. Apply visual position and saved correct rotation to physics body
     body.position.copy(mesh.position);
-    body.quaternion.copy(mesh.quaternion); // ✅ 回転を直接コピー
+    body.quaternion.copy(mesh.quaternion); // ✅ Copy rotation directly
 
-    // 位置補正: Box/Sphere のみ底面が地面に乗るようにYを補正。Mesh/Trimesh/Convexは補正しない（形状が実寸で一致）。
+    // Position correction: Correct Y so only Box/Sphere bottom sits on ground. Do not correct Mesh/Trimesh/Convex (shape matches actual size).
     if (shape === "sphere") {
       body.position.y += sphereRadius;
     } else if (shape === "box") {

@@ -1,195 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OC Kawaii</title>
-    <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="favicon/favicon.ico" />
 
     <!-- Load Silkscreen font from Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        @font-face {
-            font-family: 'Silkscreen';
-            src: url('/fonts/Silkscreen-Regular.ttf') format('truetype');
-        }
+      @font-face {
+        font-family: "Silkscreen";
+        src: url("/fonts/Silkscreen-Regular.ttf") format("truetype");
+      }
 
-        body {
-            overflow: hidden;
-            background: #000;
-            font-family: 'Silkscreen', 'Courier New', monospace;
-        }
+      body {
+        overflow: hidden;
+        background: #000;
+        font-family: "Silkscreen", "Courier New", monospace;
+      }
 
-        /* Ensure Silkscreen font is loaded and available */
-        .font-preload {
-            font-family: 'Silkscreen';
-            position: absolute;
-            left: -9999px;
-            visibility: hidden;
-        }
+      /* Ensure Silkscreen font is loaded and available */
+      .font-preload {
+        font-family: "Silkscreen";
+        position: absolute;
+        left: -9999px;
+        visibility: hidden;
+      }
 
-        /* style.css */
-        #container {
-            position: relative;
-            /* 子要素の位置の基準となる */
-            width: 100vw;
-            height: 100vh;
-        }
+      /* style.css */
+      #container {
+        position: relative;
+        /* Base for children positioning */
+        width: 100vw;
+        height: 100vh;
+      }
 
-        #background-gradient {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* 紫からピンクがかった黄色へのグラデーション */
-            background: linear-gradient(to bottom, #ffffff, #b5ebf5);
-            z-index: -1;
-            /* canvasの背面に配置 */
-        }
+      #background-gradient {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* Gradient from purple to pinkish yellow */
+        background: linear-gradient(to bottom, #ffffff, #b5ebf5);
+        z-index: -1;
+        /* Behind canvas */
+      }
 
-        .webgl {
-            /* canvasを背景の上に重ねる */
-            position: absolute;
-            top: 0;
-            left: 0;
-            outline: none;
-        }
+      .webgl {
+        /* Overlay on background */
+        position: absolute;
+        top: 0;
+        left: 0;
+        outline: none;
+      }
 
-        canvas.webgl {
-            position: fixed;
-            top: 0;
-            left: 0;
-            outline: none;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-        }
+      canvas.webgl {
+        position: fixed;
+        top: 0;
+        left: 0;
+        outline: none;
+        image-rendering: pixelated;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: crisp-edges;
+      }
 
-        .controls {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            color: white;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 5px;
-            font-size: 12px;
-        }
+      .controls {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        color: white;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 15px;
+        border-radius: 5px;
+        font-size: 12px;
+      }
 
-        #project-link-container {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 30px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            border-radius: 10px;
-            font-size: 1.2em;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
+      #project-link-container {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 15px 30px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: 10px;
+        font-size: 1.2em;
+        transition: opacity 0.3s, visibility 0.3s;
+      }
 
-        #project-link-container.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
+      #project-link-container.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
 
-        #project-link-container a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
+      #project-link-container a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+      }
 
-        #loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #b5eef5;
-            /* 背景色 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            transition: opacity 0.5s ease;
-        }
+      #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #b5eef5;
+        /* Background color */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        transition: opacity 0.5s ease;
+      }
 
-        #loading-ui {
-            text-align: center;
-        }
+      #loading-ui {
+        text-align: center;
+      }
 
-        #progress-bar {
-            width: 300px;
-            height: 10px;
-            background-color: rgba(0, 0, 0, 0.2);
-            margin: 20px 0;
-        }
+      #progress-bar {
+        width: 300px;
+        height: 10px;
+        background-color: rgba(0, 0, 0, 0.2);
+        margin: 20px 0;
+      }
 
-        #progress-bar-fill {
-            width: 0%;
-            height: 100%;
-            background-color: #9698ff;
-            transition: width 0.5s ease;
-        }
+      #progress-bar-fill {
+        width: 0%;
+        height: 100%;
+        background-color: #9698ff;
+        transition: width 0.5s ease;
+      }
 
-        .start-button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-            /* Add some space above the button */
-        }
+      .start-button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+        /* Add some space above the button */
+      }
 
-        #start-button {
-            padding: 20px 40px;
-            border: none;
-            font-family: 'Silkscreen', monospace;
-            font-size: 1.5em;
-            display: none;
-            cursor: pointer;
-        }
+      #start-button {
+        padding: 20px 40px;
+        border: none;
+        font-family: "Silkscreen", monospace;
+        font-size: 1.5em;
+        display: none;
+        cursor: pointer;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="loading-overlay">
-        <div id="loading-ui">
-            <h2>Loading...</h2>
-            <div id="progress-bar">
-                <div id="progress-bar-fill"></div>
-            </div>
-            <div class="start-button-container">
-                <button id="start-button">START</button>
-            </div>
+      <div id="loading-ui">
+        <h2>Loading...</h2>
+        <div id="progress-bar">
+          <div id="progress-bar-fill"></div>
         </div>
+        <div class="start-button-container">
+          <button id="start-button">START</button>
+        </div>
+      </div>
     </div>
     <!-- Font preload element to ensure Silkscreen is available -->
     <div class="font-preload">Silkscreen Font Preload</div>
 
     <div id="container">
-        <div id="background-gradient"></div>
-        <canvas class="webgl"></canvas>
+      <div id="background-gradient"></div>
+      <canvas class="webgl"></canvas>
     </div>
     <div class="controls">
-        <div>WASD: Move character</div>
-        <div>R: Reset character position</div>
-        <div>G: Grab/throw certain objects</div>
-        <!-- <div>Simping my OC frfr</div> -->
+      <div>WASD: Move character</div>
+      <div>R: Reset character position</div>
+      <div>G: Grab/throw certain objects</div>
+      <!-- <div>Simping my OC frfr</div> -->
     </div>
     <div id="project-link-container" class="hidden">
-        <a href="#" target="_blank" rel="noopener noreferrer"></a>
+      <a href="#" target="_blank" rel="noopener noreferrer"></a>
     </div>
     <script type="module" src="./script.js"></script>
-</body>
-
+  </body>
 </html>
