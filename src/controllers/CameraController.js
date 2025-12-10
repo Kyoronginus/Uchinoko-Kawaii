@@ -41,6 +41,10 @@ export class CameraController {
     if (this.freeMode) {
       this.setupEventListeners();
     }
+
+    // Camera Zones
+    this.zones = [];
+    this.currentZone = null;
   }
 
   setCharacter(character) {
@@ -88,8 +92,34 @@ export class CameraController {
     });
   }
 
+  setZones(zones) {
+    this.zones = zones;
+  }
+
+  checkZones() {
+    if (!this.character || !this.zones.length) return;
+    const charPos = this.character.getPosition();
+    let inAnyZone = false;
+    for (const zone of this.zones) {
+      if (zone.box.containsPoint(charPos)) {
+        inAnyZone = true;
+        if (this.currentZone !== zone) {
+          this.currentZone = zone;
+          this.setFollowAngle(zone.angle);
+        }
+        break;
+      }
+    }
+
+    if (!inAnyZone && this.currentZone !== null) {
+      this.currentZone = null;
+      this.resetToDefaultAngle();
+    }
+  }
+
   update() {
     if (this.character && !this.freeMode) {
+      this.checkZones();
       this.followCharacter();
     } else {
       this.updateFreeCamera();

@@ -27,3 +27,6 @@ Pixel Art: Designing and creating animated 2D character sprites using Clip Studi
 **Deployment & Workflow**
 Git & GitHub: Version control and management of the project's source code.
 Netlify: Deploying the static site and utilizing the built-in CI/CD pipeline for automatic deployments on every git push.
+
+**Assets**
+All assets including 3D models, textures, 2D illustrations and 2D sprites are created by me.
