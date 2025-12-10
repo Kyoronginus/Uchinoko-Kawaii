@@ -1,8 +1,9 @@
 **Uchinoko Kawaii**
 
-This project is an interactive website built to showcase the charm of my Original Character, Venna. It combines the retro aesthetic of 2D pixel art with modern 3D graphics and physics to create immersive visuals.
+This project is an interactive website built to showcase the charm of my Original Character, Venna. It combines the retro aesthetic of 2D pixel art with modern 3D graphics and physics.
 
-<img width="1915" height="940" alt="image" src="https://github.com/user-attachments/assets/c4a6d58f-3bad-43e4-9fb5-f5acda373009" />
+<img width="1915" height="940" alt="image" src="readme-images\home.png" />
+<img width="1915" height="940" alt="image" src="readme-images\creator.png" />
 
 **Live Demo**: https://uchinokokawaii.netlify.app/
 
