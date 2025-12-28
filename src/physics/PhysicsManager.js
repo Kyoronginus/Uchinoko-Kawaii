@@ -322,10 +322,12 @@ export class PhysicsManager {
     return this.bodyToMesh.get(body);
   }
 
-  step(deltaTime, fixedTimeStep = 1 / 60) {
-    this.world.step(fixedTimeStep, deltaTime);
+  step(deltaTime) {
+    // Simple fixed step - we assume deltaTime is roughly 1/60 because of the FPS limiter in Application.js
+    // We pass 1/60 to be safe and consistent.
+    this.world.step(1 / 60);
 
-    // Sync all meshes with their bodies
+    // Sync all meshes with their bodies directly
     this.bodyToMesh.forEach((mesh, body) => {
       mesh.position.set(body.position.x, body.position.y, body.position.z);
       // If the body is dynamic (mass > 0), sync its rotation

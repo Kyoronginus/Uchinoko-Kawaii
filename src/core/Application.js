@@ -78,6 +78,14 @@ export class Application {
     // Connect physics
     this.character.setPhysicsManager(this.physicsManager);
 
+    // Clock
+    this.clock = new THREE.Clock(); // Keep clock for other potential uses if needed, but we use performance.now for throttling
+
+    // Frame Rate Limiting
+    this.fps = 60;
+    this.fpsInterval = 1000 / this.fps;
+    this.then = window.performance.now();
+
     // Resize
     window.addEventListener("resize", () => this.resize());
   }
@@ -168,59 +176,69 @@ export class Application {
   }
 
   startLoop() {
+    this.then = window.performance.now();
     this.animate();
   }
 
   animate() {
     requestAnimationFrame(() => this.animate());
 
-    const distance = this.character
-      .getPosition()
-      .distanceTo(this.camera.position);
-    this.hd2dRenderer.setFocusDistance(distance);
-    const deltaTime = 1 / 60;
+    const now = window.performance.now();
+    const elapsed = now - this.then;
 
-    this.character.update();
+    if (elapsed > this.fpsInterval) {
+      this.then = now - (elapsed % this.fpsInterval);
 
-    // Drive the character's physics body from input
-    if (this.character.physicsBody) {
-      // Set horizontal velocity from input
-      const desiredVel = this.character.getDesiredVelocity
-        ? this.character.getDesiredVelocity()
-        : new THREE.Vector3();
-      this.character.physicsBody.velocity.x = desiredVel.x;
-      this.character.physicsBody.velocity.z = desiredVel.z;
-      // Keep character upright
-      this.character.physicsBody.position.y = Math.max(
-        this.character.physicsBody.position.y,
-        0.9
-      );
+      const distance = this.character
+        .getPosition()
+        .distanceTo(this.camera.position);
+      this.hd2dRenderer.setFocusDistance(distance);
+
+      // Fixed 1/60 step
+      const deltaTime = 1 / 60;
+
+      this.character.update();
+
+      // Drive the character's physics body from input
+      if (this.character.physicsBody) {
+        // Set horizontal velocity from input
+        const desiredVel = this.character.getDesiredVelocity
+          ? this.character.getDesiredVelocity()
+          : new THREE.Vector3();
+        this.character.physicsBody.velocity.x = desiredVel.x;
+        this.character.physicsBody.velocity.z = desiredVel.z;
+        // Keep character upright
+        this.character.physicsBody.position.y = Math.max(
+          this.character.physicsBody.position.y,
+          0.9
+        );
+      }
+
+      // Apply character repulsion
+      if (
+        this.physicsManager.applyCharacterRepulsion &&
+        this.character.physicsBody
+      ) {
+        this.physicsManager.applyCharacterRepulsion(this.character.physicsBody);
+      }
+
+      this.physicsManager.step(deltaTime);
+
+      // Sync character position from physics (Direct sync, no interpolation needed)
+      if (this.character.physicsBody && this.character.sprite) {
+        const p = this.character.physicsBody.position;
+        this.character.position.set(p.x, p.y, p.z);
+        this.character.sprite.position.copy(this.character.position);
+      }
+
+      // Update proximity
+      if (this.proximityManager) {
+        this.proximityManager.update(this.character.getPosition());
+      }
+
+      // Update camera and render
+      this.cameraController.update();
+      this.hd2dRenderer.render(this.scene, this.camera);
     }
-
-    // Apply character repulsion
-    if (
-      this.physicsManager.applyCharacterRepulsion &&
-      this.character.physicsBody
-    ) {
-      this.physicsManager.applyCharacterRepulsion(this.character.physicsBody);
-    }
-
-    this.physicsManager.step(deltaTime);
-
-    // Sync character position from physics
-    if (this.character.physicsBody && this.character.sprite) {
-      const p = this.character.physicsBody.position;
-      this.character.position.set(p.x, p.y, p.z);
-      this.character.sprite.position.copy(this.character.position);
-    }
-
-    // Update proximity
-    if (this.proximityManager) {
-      this.proximityManager.update(this.character.getPosition());
-    }
-
-    // Update camera and render
-    this.cameraController.update();
-    this.hd2dRenderer.render(this.scene, this.camera);
   }
 }
